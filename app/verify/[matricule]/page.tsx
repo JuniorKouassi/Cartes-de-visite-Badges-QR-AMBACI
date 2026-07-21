@@ -28,6 +28,17 @@ export default async function VerifyPage({ params }: { params: Params }) {
     <main className="min-h-screen flex flex-col items-center justify-center p-6 gap-6 text-center">
       <Image src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" width={72} height={72} className="h-16 w-auto" />
 
+      {staff.photo_key && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/api/photo/${staff.photo_key}`}
+          alt={staff.full_name}
+          className={`w-28 h-28 rounded-full object-cover shadow-lg ring-4 ${
+            valid ? "ring-ci-green" : "ring-red-600"
+          }`}
+        />
+      )}
+
       <div
         className={`w-full max-w-sm rounded-2xl p-6 text-white shadow-lg ${
           valid ? "bg-ci-green" : "bg-red-600"
@@ -47,14 +58,6 @@ export default async function VerifyPage({ params }: { params: Params }) {
 
       {mode === "full" && (
         <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg text-left space-y-2">
-          {staff.photo_key && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={`/api/photo/${staff.photo_key}`}
-              alt={staff.full_name}
-              className="w-24 h-24 rounded-lg object-cover mx-auto mb-3"
-            />
-          )}
           <p className="font-serif text-xl font-bold text-center">{staff.full_name}</p>
           <p className="text-ci-green-dark text-center">{staff.function_title}</p>
           <div className="text-sm text-neutral-600 pt-2 border-t border-neutral-200 space-y-1">
