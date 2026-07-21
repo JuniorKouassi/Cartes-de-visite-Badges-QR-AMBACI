@@ -15,7 +15,7 @@
     {
       "binding": "DB",
       "database_name": "ambaci-cartes",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "429bf138-df2c-48ad-8d9f-add554ab21ce"
     }
   ],
   "r2_buckets": [
