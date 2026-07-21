@@ -1,0 +1,29 @@
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../components";
+
+@theme {
+  --color-ci-orange: #f77f00;
+  --color-ci-orange-dark: #d96c00;
+  --color-ci-orange-light: #ffa040;
+  --color-ci-orange-pale: #fff0e0;
+  --color-ci-green: #009a44;
+  --color-ci-green-dark: #007a35;
+  --color-ci-green-light: #00b850;
+  --color-ci-green-pale: #e6f7ee;
+
+  --font-serif: Georgia, "Times New Roman", serif;
+}
+
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+  body {
+    background: white;
+  }
+}

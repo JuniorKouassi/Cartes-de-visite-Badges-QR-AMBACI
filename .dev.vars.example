@@ -1,0 +1,5 @@
+# Copy this file to .dev.vars for local development (.dev.vars is gitignored, never commit it).
+
+# "minimal" (default, recommended) shows only a authentic/expired banner on /verify/[matricule].
+# "full" also shows photo, matricule, function and validity to whoever scans the badge QR.
+VERIFY_MODE=minimal
