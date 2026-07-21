@@ -26,3 +26,31 @@ export const cardStrings: Record<Lang, Record<string, string>> = {
     downloadJpeg: "Download as JPEG",
   },
 };
+
+export const verifyStrings: Record<Lang, Record<string, string>> = {
+  fr: {
+    title: "Vérification de badge",
+    authentic: "Membre du personnel authentique",
+    invalid: "Badge non valide",
+    validUntil: "Valide jusqu'au",
+    permanentValidity: "Validité permanente",
+    invalidReason: "Ce badge a été désactivé ou a expiré",
+    matricule: "Matricule",
+    institution: "Institution",
+  },
+  en: {
+    title: "Badge verification",
+    authentic: "Authentic staff member",
+    invalid: "Invalid badge",
+    validUntil: "Valid until",
+    permanentValidity: "Permanent validity",
+    invalidReason: "This badge has been deactivated or has expired",
+    matricule: "Staff ID",
+    institution: "Institution",
+  },
+};
+
+export const dateLocale: Record<Lang, string> = {
+  fr: "fr-FR",
+  en: "en-GB",
+};

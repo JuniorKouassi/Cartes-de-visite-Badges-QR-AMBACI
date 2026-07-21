@@ -1,10 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
+import { toJpeg, toPng } from "html-to-image";
+import { jsPDF } from "jspdf";
 import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
 import { Badge } from "@/components/Badge";
 import { DEFAULT_INSTITUTION, type Staff } from "@/lib/staff";
+
+const EXPORT_PIXEL_RATIO = 4;
+const CARD_MM = { w: 85.6, h: 54 };
+const BADGE_MM = { w: 54, h: 85.6 };
 
 type FormState = {
   full_name: string;
@@ -41,7 +47,11 @@ export function StaffForm({ staff }: { staff?: Staff }) {
   const [error, setError] = useState<string | null>(null);
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
+  const [exportingKey, setExportingKey] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -156,6 +166,56 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
     if (staff) {
       void uploadPhoto(staff.id, file).then(() => router.refresh());
+    }
+  }
+
+  async function captureDataUrl(node: HTMLElement, format: "png" | "jpeg") {
+    return format === "png"
+      ? toPng(node, { pixelRatio: EXPORT_PIXEL_RATIO })
+      : toJpeg(node, { pixelRatio: EXPORT_PIXEL_RATIO, backgroundColor: "#ffffff", quality: 0.98 });
+  }
+
+  function triggerDownload(dataUrl: string, filename: string) {
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+  }
+
+  async function handleExportImage(
+    key: "front" | "back" | "badge",
+    ref: RefObject<HTMLDivElement | null>,
+    format: "png" | "jpeg"
+  ) {
+    if (!ref.current || !staff) return;
+    setExportingKey(`${key}-${format}`);
+    try {
+      const dataUrl = await captureDataUrl(ref.current, format);
+      triggerDownload(dataUrl, `${staff.slug}-${key}.${format === "png" ? "png" : "jpg"}`);
+    } finally {
+      setExportingKey(null);
+    }
+  }
+
+  async function handleExportPdf() {
+    if (!staff || !frontRef.current || !backRef.current || !badgeRef.current) return;
+    setExportingKey("pdf");
+    try {
+      const [frontUrl, backUrl, badgeUrl] = await Promise.all([
+        captureDataUrl(frontRef.current, "png"),
+        captureDataUrl(backRef.current, "png"),
+        captureDataUrl(badgeRef.current, "png"),
+      ]);
+
+      const doc = new jsPDF({ unit: "mm", format: [CARD_MM.w, CARD_MM.h], orientation: "landscape" });
+      doc.addImage(frontUrl, "PNG", 0, 0, CARD_MM.w, CARD_MM.h);
+      doc.addPage([CARD_MM.w, CARD_MM.h], "landscape");
+      doc.addImage(backUrl, "PNG", 0, 0, CARD_MM.w, CARD_MM.h);
+      doc.addPage([BADGE_MM.w, BADGE_MM.h], "portrait");
+      doc.addImage(badgeUrl, "PNG", 0, 0, BADGE_MM.w, BADGE_MM.h);
+      doc.save(`${staff.slug}-carte-badge.pdf`);
+    } finally {
+      setExportingKey(null);
     }
   }
 
@@ -325,16 +385,69 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       </form>
 
       <div className="flex flex-col items-center gap-8">
-        <BusinessCardFront staff={previewStaff} />
+        <div ref={frontRef}>
+          <BusinessCardFront staff={previewStaff} photoSrc={photoSrc} />
+        </div>
         {cardQrSrc ? (
-          <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} />
+          <div ref={backRef}>
+            <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} />
+          </div>
         ) : (
           <p className="text-sm text-neutral-400">QR de la carte disponible après enregistrement</p>
         )}
         {badgeQrSrc ? (
-          <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
+          <div ref={badgeRef}>
+            <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
+          </div>
         ) : (
           <p className="text-sm text-neutral-400">Badge disponible après enregistrement</p>
+        )}
+
+        {staff && cardQrSrc && badgeQrSrc && (
+          <div className="w-full bg-white rounded-xl shadow-sm ring-1 ring-black/5 p-5 space-y-3">
+            <h2 className="text-sm font-semibold text-neutral-700">
+              Télécharger pour impression (haute qualité)
+            </h2>
+
+            {(
+              [
+                { key: "front" as const, ref: frontRef, label: "Carte — recto" },
+                { key: "back" as const, ref: backRef, label: "Carte — verso" },
+                { key: "badge" as const, ref: badgeRef, label: "Badge" },
+              ]
+            ).map(({ key, ref, label }) => (
+              <div key={key} className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-neutral-600">{label}</span>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    disabled={exportingKey !== null}
+                    onClick={() => handleExportImage(key, ref, "png")}
+                    className="text-ci-green-dark hover:underline disabled:opacity-50"
+                  >
+                    {exportingKey === `${key}-png` ? "…" : "PNG"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={exportingKey !== null}
+                    onClick={() => handleExportImage(key, ref, "jpeg")}
+                    className="text-ci-green-dark hover:underline disabled:opacity-50"
+                  >
+                    {exportingKey === `${key}-jpeg` ? "…" : "JPEG"}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              disabled={exportingKey !== null}
+              onClick={handleExportPdf}
+              className="w-full rounded-full bg-ci-green px-4 py-2.5 text-white text-sm font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60"
+            >
+              {exportingKey === "pdf" ? "Génération du PDF…" : "Télécharger tout en PDF (3 pages)"}
+            </button>
+          </div>
         )}
       </div>
     </div>
