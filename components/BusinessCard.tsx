@@ -20,9 +20,9 @@ export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?:
           className="w-[13%] max-h-[8mm] h-auto object-contain shrink-0"
         />
         <div className="flex-1 min-w-0 text-center">
-          <p className="font-serif text-[2.6mm] font-semibold leading-tight truncate">{staff.institution}</p>
-          <p className="text-[2mm] font-bold tracking-wide leading-tight mt-[0.4mm] truncate">{t.republic}</p>
-          <p className="text-[1.7mm] text-neutral-500 leading-tight truncate">{t.motto}</p>
+          <p className="font-serif text-[2.3mm] font-semibold leading-[1.15] line-clamp-2">{staff.institution}</p>
+          <p className="text-[1.9mm] font-bold tracking-wide leading-tight mt-[0.4mm] truncate">{t.republic}</p>
+          <p className="text-[1.6mm] text-neutral-500 leading-tight truncate">{t.motto}</p>
         </div>
         <div className="w-[13%] shrink-0" aria-hidden />
       </div>
