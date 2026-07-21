@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
 import { Badge } from "@/components/Badge";
 import { DEFAULT_INSTITUTION, type Staff } from "@/lib/staff";
@@ -38,6 +38,15 @@ export function StaffForm({ staff }: { staff?: Staff }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
+  const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingPhotoUrl) URL.revokeObjectURL(pendingPhotoUrl);
+    };
+  }, [pendingPhotoUrl]);
 
   const previewStaff: Staff = {
     id: staff?.id ?? 0,
@@ -58,7 +67,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
   const cardQrSrc = staff ? `/qr/card/${staff.slug}.png` : null;
   const badgeQrSrc = staff ? `/qr/verify/${staff.matricule}.png` : null;
-  const photoSrc = staff?.photo_key ? `/api/photo/${staff.photo_key}` : null;
+  const photoSrc = pendingPhotoUrl ?? (staff?.photo_key ? `/api/photo/${staff.photo_key}` : null);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -94,6 +103,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       const saved: Staff = await res.json();
 
       if (!staff) {
+        if (pendingPhoto) await uploadPhoto(saved.id, pendingPhoto);
         router.push(`/admin/${saved.id}/edit`);
       } else {
         router.refresh();
@@ -105,20 +115,28 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     }
   }
 
-  async function handlePhotoUpload(file: File) {
-    if (!staff) return;
+  async function uploadPhoto(id: number, file: File) {
     setUploading(true);
     setError(null);
     try {
       const body = new FormData();
       body.append("photo", file);
-      const res = await fetch(`/api/staff/${staff.id}/photo`, { method: "POST", body });
+      const res = await fetch(`/api/staff/${id}/photo`, { method: "POST", body });
       if (!res.ok) throw new Error("Échec de l'envoi de la photo");
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
       setUploading(false);
+    }
+  }
+
+  function handlePhotoSelect(file: File) {
+    if (pendingPhotoUrl) URL.revokeObjectURL(pendingPhotoUrl);
+    setPendingPhoto(file);
+    setPendingPhotoUrl(URL.createObjectURL(file));
+
+    if (staff) {
+      void uploadPhoto(staff.id, file).then(() => router.refresh());
     }
   }
 
@@ -214,22 +232,43 @@ export function StaffForm({ staff }: { staff?: Staff }) {
           Badge actif
         </label>
 
-        {staff && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Photo du badge</label>
-            <input
-              type="file"
-              accept="image/*"
-              disabled={uploading}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handlePhotoUpload(file);
-              }}
-              className="block w-full text-sm"
-            />
-            {uploading && <p className="text-sm text-neutral-500 mt-1">Envoi en cours…</p>}
+        <div>
+          <label className="block text-sm font-medium mb-1">Photo du badge</label>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-lg border border-neutral-300 overflow-hidden bg-neutral-100 flex items-center justify-center shrink-0">
+              {photoSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoSrc} alt="Aperçu" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs text-neutral-400 text-center px-1">Aucune photo</span>
+              )}
+            </div>
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                disabled={uploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handlePhotoSelect(file);
+                }}
+                className="hidden"
+              />
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-full border border-ci-green text-ci-green-dark px-4 py-2 text-sm font-medium hover:bg-ci-green-pale transition-colors disabled:opacity-60"
+              >
+                {uploading ? "Envoi en cours…" : photoSrc ? "Changer la photo" : "Ajouter une photo"}
+              </button>
+              {!staff && pendingPhoto && (
+                <p className="text-xs text-neutral-500 mt-1">Sera envoyée à la création de la fiche</p>
+              )}
+            </div>
           </div>
-        )}
+        </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -253,14 +292,10 @@ export function StaffForm({ staff }: { staff?: Staff }) {
         )}
       </form>
 
-      <div className="flex flex-col items-center gap-6">
-        <div className="scale-125 origin-top">
-          <BusinessCardFront staff={previewStaff} />
-        </div>
+      <div className="flex flex-col items-center gap-8">
+        <BusinessCardFront staff={previewStaff} />
         {cardQrSrc ? (
-          <div className="scale-125 origin-top">
-            <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} />
-          </div>
+          <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} />
         ) : (
           <p className="text-sm text-neutral-400">QR de la carte disponible après enregistrement</p>
         )}

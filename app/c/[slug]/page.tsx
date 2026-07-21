@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getDb } from "@/lib/db";
 import { getStaffBySlug } from "@/lib/staff";
-import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
-import { CardFlip } from "./CardFlip";
+import { CardView } from "./CardView";
 
 type Params = Promise<{ slug: string }>;
 
@@ -22,21 +21,7 @@ export default async function CardPage({ params }: { params: Params }) {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
-      <CardFlip staff={staff} qrSrc={qrSrc} />
-
-      <div className="hidden print:flex print:flex-col print:gap-4">
-        <BusinessCardFront staff={staff} />
-        <BusinessCardBack staff={staff} qrSrc={qrSrc} />
-      </div>
-
-      <p className="text-sm text-neutral-500 print:hidden">Touchez la carte pour la retourner</p>
-
-      <a
-        href={`/c/${staff.slug}/vcard`}
-        className="print:hidden inline-flex items-center gap-2 rounded-full bg-ci-green px-6 py-3 text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
-      >
-        Enregistrer le contact
-      </a>
+      <CardView staff={staff} qrSrc={qrSrc} />
     </main>
   );
 }
