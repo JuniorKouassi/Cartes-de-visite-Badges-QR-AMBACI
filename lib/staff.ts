@@ -144,3 +144,7 @@ export async function setStaffPhoto(db: D1Database, id: number, photoKey: string
     .bind(photoKey, id)
     .run();
 }
+
+export async function deleteStaff(db: D1Database, id: number): Promise<Staff | null> {
+  return db.prepare("DELETE FROM staff WHERE id = ? RETURNING *").bind(id).first<Staff>();
+}

@@ -50,16 +50,22 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/10 print:hidden">
-        {(["fr", "en"] as const).map((code) => (
+      <div className="flex gap-1 rounded-full bg-white/90 backdrop-blur-sm p-1 shadow-lg ring-1 ring-black/10 print:hidden">
+        {(
+          [
+            { code: "fr", flag: "🇫🇷" },
+            { code: "en", flag: "🇬🇧" },
+          ] as const
+        ).map(({ code, flag }) => (
           <button
             key={code}
             type="button"
             onClick={() => changeLang(code)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              lang === code ? "bg-ci-green text-white" : "text-neutral-600 hover:bg-neutral-100"
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              lang === code ? "bg-ci-green text-white shadow-sm" : "text-neutral-600 hover:bg-neutral-100"
             }`}
           >
+            <span className="text-base leading-none">{flag}</span>
             {code.toUpperCase()}
           </button>
         ))}
@@ -93,9 +99,9 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
         <BusinessCardBack staff={staff} qrSrc={qrSrc} lang={lang} />
       </div>
 
-      <p className="text-sm text-neutral-500 print:hidden">{t.flipHint}</p>
+      <p className="text-sm text-white/90 drop-shadow-sm print:hidden">{t.flipHint}</p>
 
-      <div className="print:hidden flex flex-col items-center gap-3">
+      <div className="print:hidden flex flex-col items-center gap-4 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-5 shadow-lg ring-1 ring-black/10">
         <a
           href={`/c/${staff.slug}/vcard`}
           className="inline-flex items-center gap-2 rounded-full bg-ci-green px-6 py-3 text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
@@ -103,7 +109,7 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
           {t.saveContact}
         </a>
 
-        <div className="flex gap-3 text-sm">
+        <div className="flex gap-4 text-sm">
           <button
             type="button"
             disabled={exporting}

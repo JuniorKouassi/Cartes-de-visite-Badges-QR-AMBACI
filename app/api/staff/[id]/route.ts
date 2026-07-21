@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-import { updateStaff, type StaffInput } from "@/lib/staff";
+import { getDb, getPhotosBucket } from "@/lib/db";
+import { deleteStaff, updateStaff, type StaffInput } from "@/lib/staff";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,4 +14,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!staff) return NextResponse.json({ error: "Fiche introuvable" }, { status: 404 });
 
   return NextResponse.json(staff);
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const staff = await deleteStaff(getDb(), Number(id));
+  if (!staff) return NextResponse.json({ error: "Fiche introuvable" }, { status: 404 });
+
+  if (staff.photo_key) {
+    await getPhotosBucket().delete(staff.photo_key);
+  }
+
+  return NextResponse.json({ ok: true });
 }

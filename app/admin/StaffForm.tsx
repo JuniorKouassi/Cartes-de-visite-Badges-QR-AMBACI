@@ -37,6 +37,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
   const [form, setForm] = useState<FormState>(() => toFormState(staff));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
@@ -127,6 +128,24 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!staff) return;
+    if (!window.confirm(`Supprimer définitivement la fiche de ${staff.full_name} ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/staff/${staff.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Échec de la suppression");
+      router.push("/admin");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+      setDeleting(false);
     }
   }
 
@@ -272,13 +291,26 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-full bg-ci-green px-6 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60"
-        >
-          {saving ? "Enregistrement…" : staff ? "Mettre à jour" : "Créer la fiche"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-full bg-ci-green px-6 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60"
+          >
+            {saving ? "Enregistrement…" : staff ? "Mettre à jour" : "Créer la fiche"}
+          </button>
+
+          {staff && (
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={handleDelete}
+              className="rounded-full border border-red-300 text-red-600 px-5 py-2.5 font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
+            >
+              {deleting ? "Suppression…" : "Supprimer"}
+            </button>
+          )}
+        </div>
 
         {staff && (
           <div className="flex gap-3 pt-2 text-sm">
