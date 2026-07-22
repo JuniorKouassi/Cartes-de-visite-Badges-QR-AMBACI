@@ -30,7 +30,7 @@ export function Badge({
           height={40}
           className="h-[6mm] w-auto object-contain shrink-0"
         />
-        <p className="min-w-0 flex-1 font-serif text-[1.9mm] font-semibold leading-[1.15] line-clamp-2">
+        <p className="min-w-0 flex-1 text-center font-serif text-[1.9mm] font-semibold leading-[1.15] line-clamp-2">
           {staff.institution}
         </p>
       </div>
