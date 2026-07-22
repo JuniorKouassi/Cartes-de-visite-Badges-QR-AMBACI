@@ -60,13 +60,13 @@ export function Badge({
 
         <div className="mt-[1.4mm] w-full text-[1.9mm] leading-snug text-neutral-700 space-y-[0.5mm]">
           <p className="truncate">
-            <span className="font-semibold">Matricule :</span> {staff.matricule}
+            <span className="font-bold">Matricule :</span> {staff.matricule}
           </p>
           <p className="truncate">
-            <span className="font-semibold">Institution :</span> {staff.institution}
+            <span className="font-bold">Institution :</span> {staff.institution}
           </p>
           <p className="truncate">
-            <span className="font-semibold">Valide jusqu&apos;au :</span> {formatDate(staff.valid_until)}
+            <span className="font-bold">Valide jusqu&apos;au :</span> {formatDate(staff.valid_until)}
           </p>
         </div>
 
