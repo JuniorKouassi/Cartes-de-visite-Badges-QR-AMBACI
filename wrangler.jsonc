@@ -23,5 +23,8 @@
       "binding": "PHOTOS",
       "bucket_name": "ambaci-photos"
     }
-  ]
+  ],
+  "ai": {
+    "binding": "AI"
+  }
 }

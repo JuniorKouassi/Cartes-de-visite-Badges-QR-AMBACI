@@ -12,6 +12,9 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
   const [lang, setLang] = useState<Lang>("fr");
   const [flipped, setFlipped] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [autoInstitution, setAutoInstitution] = useState<string | null>(null);
+  const [autoFunctionTitle, setAutoFunctionTitle] = useState<string | null>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
 
@@ -19,6 +22,45 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
     const saved = window.localStorage.getItem(LANG_STORAGE_KEY);
     if (saved === "fr" || saved === "en") setLang(saved);
   }, []);
+
+  useEffect(() => {
+    if (lang !== "en") return;
+    const needsInstitution = !staff.institution_en && !autoInstitution;
+    const needsFunctionTitle = !staff.function_title_en && !autoFunctionTitle;
+    if (!needsInstitution && !needsFunctionTitle) return;
+
+    let cancelled = false;
+    setTranslating(true);
+
+    async function run() {
+      try {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            institution: needsInstitution ? staff.institution : undefined,
+            functionTitle: needsFunctionTitle ? staff.function_title : undefined,
+          }),
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { institution?: string; functionTitle?: string };
+        if (cancelled) return;
+        if (data.institution) setAutoInstitution(data.institution);
+        if (data.functionTitle) setAutoFunctionTitle(data.functionTitle);
+      } catch {
+        // ignore; falls back to French text
+      } finally {
+        if (!cancelled) setTranslating(false);
+      }
+    }
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   function changeLang(next: Lang) {
     setLang(next);
@@ -47,6 +89,13 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
   }
 
   const t = cardStrings[lang];
+
+  // Admin-entered translation wins; otherwise fall back to the auto-translated text.
+  const displayStaff: Staff = {
+    ...staff,
+    institution_en: staff.institution_en || autoInstitution,
+    function_title_en: staff.function_title_en || autoFunctionTitle,
+  };
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -83,23 +132,25 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
         >
           <div className="absolute inset-0 [backface-visibility:hidden]">
             <div ref={frontRef}>
-              <BusinessCardFront staff={staff} lang={lang} />
+              <BusinessCardFront staff={displayStaff} lang={lang} />
             </div>
           </div>
           <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
             <div ref={backRef}>
-              <BusinessCardBack staff={staff} qrSrc={qrSrc} lang={lang} />
+              <BusinessCardBack staff={displayStaff} qrSrc={qrSrc} lang={lang} />
             </div>
           </div>
         </div>
       </button>
 
       <div className="hidden print:flex print:flex-col print:gap-4">
-        <BusinessCardFront staff={staff} lang={lang} />
-        <BusinessCardBack staff={staff} qrSrc={qrSrc} lang={lang} />
+        <BusinessCardFront staff={displayStaff} lang={lang} />
+        <BusinessCardBack staff={displayStaff} qrSrc={qrSrc} lang={lang} />
       </div>
 
-      <p className="text-sm text-white/90 drop-shadow-sm print:hidden">{t.flipHint}</p>
+      <p className="text-sm text-white/90 drop-shadow-sm print:hidden">
+        {translating ? (lang === "en" ? "Translating…" : "Traduction…") : t.flipHint}
+      </p>
 
       <div className="print:hidden flex flex-col items-center gap-4 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-5 shadow-lg ring-1 ring-black/10">
         <a

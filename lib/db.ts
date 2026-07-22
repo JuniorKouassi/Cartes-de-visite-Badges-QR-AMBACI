@@ -10,6 +10,11 @@ export function getPhotosBucket() {
   return env.PHOTOS;
 }
 
+export function getAi() {
+  const { env } = getCloudflareContext();
+  return env.AI;
+}
+
 export function getVerifyMode(): "minimal" | "full" {
   const { env } = getCloudflareContext();
   return String(env.VERIFY_MODE) === "full" ? "full" : "minimal";
