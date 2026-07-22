@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Staff } from "@/lib/staff";
+import { localizedFunctionTitle, localizedInstitution, type Staff } from "@/lib/staff";
 import { cardStrings, type Lang } from "@/lib/i18n";
 import { ebGaramond } from "@/lib/fonts";
 
@@ -7,6 +7,8 @@ const cardSizing = "w-[85.6mm] h-[54mm] max-w-full aspect-[85.6/54]";
 
 export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?: Lang }) {
   const t = cardStrings[lang];
+  const institution = localizedInstitution(staff, lang);
+  const functionTitle = localizedFunctionTitle(staff, lang);
 
   return (
     <div
@@ -24,7 +26,7 @@ export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?:
 
       <div className="absolute text-center" style={{ left: "51.172%", top: "12.01%", width: "36.719%" }}>
         <p className="text-navy font-medium leading-[1.32] line-clamp-2" style={{ fontSize: "2.07mm" }}>
-          {staff.institution}
+          {institution}
         </p>
         <div className="flex mt-[0.94mm]" style={{ height: "0.67mm" }}>
           <div className="flex-1 bg-ci-orange" />
@@ -41,7 +43,7 @@ export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?:
           className="text-navy italic font-medium mt-[1.07mm] leading-tight line-clamp-2"
           style={{ fontSize: "2.21mm" }}
         >
-          {staff.function_title}
+          {functionTitle}
         </p>
       </div>
 

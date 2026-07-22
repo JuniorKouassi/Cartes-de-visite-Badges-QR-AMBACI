@@ -1,6 +1,7 @@
 import { uniqueSlug } from "./slug";
 
 export const DEFAULT_INSTITUTION = "Ambassade / Mission permanente de Côte d'Ivoire - Vienne";
+export const DEFAULT_INSTITUTION_EN = "Embassy / Permanent Mission of Côte d'Ivoire - Vienna";
 
 export interface Staff {
   id: number;
@@ -8,7 +9,9 @@ export interface Staff {
   matricule: string;
   full_name: string;
   function_title: string;
+  function_title_en: string | null;
   institution: string;
+  institution_en: string | null;
   phone_office: string | null;
   phone_cell: string | null;
   email: string | null;
@@ -22,13 +25,26 @@ export interface Staff {
 export interface StaffInput {
   full_name: string;
   function_title: string;
+  function_title_en?: string | null;
   institution?: string;
+  institution_en?: string | null;
   phone_office?: string | null;
   phone_cell?: string | null;
   email?: string | null;
   valid_until?: string | null;
   active?: boolean;
   matricule?: string;
+}
+
+export function localizedInstitution(staff: Pick<Staff, "institution" | "institution_en">, lang: "fr" | "en") {
+  return lang === "en" ? staff.institution_en || staff.institution : staff.institution;
+}
+
+export function localizedFunctionTitle(
+  staff: Pick<Staff, "function_title" | "function_title_en">,
+  lang: "fr" | "en"
+) {
+  return lang === "en" ? staff.function_title_en || staff.function_title : staff.function_title;
 }
 
 export function isBadgeValid(staff: Pick<Staff, "active" | "valid_until">): boolean {
@@ -82,8 +98,8 @@ export async function createStaff(db: D1Database, input: StaffInput): Promise<St
 
   const result = await db
     .prepare(
-      `INSERT INTO staff (slug, matricule, full_name, function_title, institution, phone_office, phone_cell, email, valid_until, active, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `INSERT INTO staff (slug, matricule, full_name, function_title, function_title_en, institution, institution_en, phone_office, phone_cell, email, valid_until, active, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
        RETURNING *`
     )
     .bind(
@@ -91,7 +107,9 @@ export async function createStaff(db: D1Database, input: StaffInput): Promise<St
       matricule,
       input.full_name.trim(),
       input.function_title.trim(),
+      input.function_title_en?.trim() || null,
       input.institution?.trim() || DEFAULT_INSTITUTION,
+      input.institution_en?.trim() || null,
       input.phone_office?.trim() || null,
       input.phone_cell?.trim() || null,
       input.email?.trim() || null,
@@ -114,7 +132,7 @@ export async function updateStaff(db: D1Database, id: number, input: StaffInput)
   const result = await db
     .prepare(
       `UPDATE staff SET
-        slug = ?, matricule = ?, full_name = ?, function_title = ?, institution = ?,
+        slug = ?, matricule = ?, full_name = ?, function_title = ?, function_title_en = ?, institution = ?, institution_en = ?,
         phone_office = ?, phone_cell = ?, email = ?, valid_until = ?, active = ?,
         updated_at = datetime('now')
        WHERE id = ?
@@ -125,7 +143,9 @@ export async function updateStaff(db: D1Database, id: number, input: StaffInput)
       input.matricule?.trim() || current.matricule,
       input.full_name.trim(),
       input.function_title.trim(),
+      input.function_title_en?.trim() || null,
       input.institution?.trim() || DEFAULT_INSTITUTION,
+      input.institution_en?.trim() || null,
       input.phone_office?.trim() || null,
       input.phone_cell?.trim() || null,
       input.email?.trim() || null,

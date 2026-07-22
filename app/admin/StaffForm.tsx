@@ -6,7 +6,8 @@ import { toJpeg, toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
 import { Badge } from "@/components/Badge";
-import { DEFAULT_INSTITUTION, type Staff } from "@/lib/staff";
+import { DEFAULT_INSTITUTION, DEFAULT_INSTITUTION_EN, type Staff } from "@/lib/staff";
+import type { Lang } from "@/lib/i18n";
 
 const EXPORT_PIXEL_RATIO = 4;
 const CARD_MM = { w: 85.6, h: 54 };
@@ -15,7 +16,9 @@ const BADGE_MM = { w: 54, h: 85.6 };
 type FormState = {
   full_name: string;
   function_title: string;
+  function_title_en: string;
   institution: string;
+  institution_en: string;
   phone_office: string;
   phone_cell: string;
   email: string;
@@ -28,7 +31,9 @@ function toFormState(staff?: Staff): FormState {
   return {
     full_name: staff?.full_name ?? "",
     function_title: staff?.function_title ?? "",
+    function_title_en: staff?.function_title_en ?? "",
     institution: staff?.institution ?? DEFAULT_INSTITUTION,
+    institution_en: staff?.institution_en ?? DEFAULT_INSTITUTION_EN,
     phone_office: staff?.phone_office ?? "",
     phone_cell: staff?.phone_cell ?? "",
     email: staff?.email ?? "",
@@ -48,6 +53,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
   const [exportingKey, setExportingKey] = useState<string | null>(null);
+  const [previewLang, setPreviewLang] = useState<Lang>("fr");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -65,7 +71,9 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     matricule: form.matricule || staff?.matricule || "APERÇU",
     full_name: form.full_name || "Nom Prénom",
     function_title: form.function_title || "Fonction",
+    function_title_en: form.function_title_en || null,
     institution: form.institution || DEFAULT_INSTITUTION,
+    institution_en: form.institution_en || null,
     phone_office: form.phone_office || null,
     phone_cell: form.phone_cell || null,
     email: form.email || null,
@@ -92,7 +100,9 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     const payload = {
       full_name: form.full_name,
       function_title: form.function_title,
+      function_title_en: form.function_title_en || null,
       institution: form.institution,
+      institution_en: form.institution_en || null,
       phone_office: form.phone_office || null,
       phone_cell: form.phone_cell || null,
       email: form.email || null,
@@ -233,7 +243,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Fonction *</label>
+          <label className="block text-sm font-medium mb-1">Fonction (FR) *</label>
           <input
             required
             value={form.function_title}
@@ -243,10 +253,30 @@ export function StaffForm({ staff }: { staff?: Staff }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Institution</label>
+          <label className="block text-sm font-medium mb-1">Fonction (EN)</label>
+          <input
+            value={form.function_title_en}
+            onChange={(e) => update("function_title_en", e.target.value)}
+            placeholder="Repris en français si vide"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ci-green"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Institution (FR)</label>
           <input
             value={form.institution}
             onChange={(e) => update("institution", e.target.value)}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ci-green"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Institution (EN)</label>
+          <input
+            value={form.institution_en}
+            onChange={(e) => update("institution_en", e.target.value)}
+            placeholder="Repris en français si vide"
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ci-green"
           />
         </div>
@@ -385,12 +415,33 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       </form>
 
       <div className="flex flex-col items-center gap-8">
+        <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
+          {(
+            [
+              { code: "fr" as const, flag: "🇫🇷" },
+              { code: "en" as const, flag: "🇬🇧" },
+            ]
+          ).map(({ code, flag }) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => setPreviewLang(code)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                previewLang === code ? "bg-ci-green text-white" : "text-neutral-600 hover:bg-neutral-100"
+              }`}
+            >
+              <span className="text-base leading-none">{flag}</span>
+              {code.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
         <div ref={frontRef}>
-          <BusinessCardFront staff={previewStaff} />
+          <BusinessCardFront staff={previewStaff} lang={previewLang} />
         </div>
         {cardQrSrc ? (
           <div ref={backRef}>
-            <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} />
+            <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
           </div>
         ) : (
           <p className="text-sm text-neutral-400">QR de la carte disponible après enregistrement</p>

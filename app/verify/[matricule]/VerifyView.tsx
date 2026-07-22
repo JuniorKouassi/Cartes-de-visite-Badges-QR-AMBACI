@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { dateLocale, verifyStrings, type Lang } from "@/lib/i18n";
-import type { Staff } from "@/lib/staff";
+import { localizedFunctionTitle, localizedInstitution, type Staff } from "@/lib/staff";
 
 const LANG_STORAGE_KEY = "ambaci-card-lang";
 
@@ -88,13 +88,13 @@ export function VerifyView({
       {mode === "full" && (
         <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg text-left space-y-2">
           <p className="font-serif text-xl font-bold text-center">{staff.full_name}</p>
-          <p className="text-ci-green-dark text-center">{staff.function_title}</p>
+          <p className="text-ci-green-dark text-center">{localizedFunctionTitle(staff, lang)}</p>
           <div className="text-sm text-neutral-600 pt-2 border-t border-neutral-200 space-y-1">
             <p>
               <span className="font-semibold">{t.matricule} :</span> {staff.matricule}
             </p>
             <p>
-              <span className="font-semibold">{t.institution} :</span> {staff.institution}
+              <span className="font-semibold">{t.institution} :</span> {localizedInstitution(staff, lang)}
             </p>
           </div>
         </div>
