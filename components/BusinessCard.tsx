@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Staff } from "@/lib/staff";
 import { cardStrings, type Lang } from "@/lib/i18n";
+import { ebGaramond } from "@/lib/fonts";
 
 const cardSizing = "w-[85.6mm] h-[54mm] max-w-full aspect-[85.6/54]";
 
@@ -9,54 +10,79 @@ export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?:
 
   return (
     <div
-      className={`${cardSizing} rounded-[3mm] bg-white text-black shadow-lg ring-1 ring-black/10 flex flex-col p-[3.5mm] overflow-hidden print:shadow-none print:ring-0`}
+      className={`${cardSizing} ${ebGaramond.className} relative bg-card-cream text-navy-line shadow-lg ring-1 ring-black/10 overflow-hidden print:shadow-none print:ring-0`}
     >
-      <div className="flex items-start gap-[1.5mm] shrink-0">
+      <div className="absolute" style={{ left: "4.531%", top: "6.373%", width: "27.5%", height: "39.216%" }}>
         <Image
           src="/armoiries.png"
           alt="Armoiries de Côte d'Ivoire"
-          width={64}
-          height={64}
-          className="w-[12%] max-h-[7.5mm] h-auto object-contain shrink-0"
+          fill
+          sizes="30vw"
+          className="object-contain object-left-top"
         />
-        <div className="flex-1 min-w-0 text-center">
-          <p className="font-serif text-[2.1mm] font-semibold leading-tight truncate">{staff.institution}</p>
-          <p className="text-[1.9mm] font-bold tracking-wide leading-tight mt-[0.4mm] truncate">{t.republic}</p>
-          <p className="text-[1.6mm] text-neutral-500 leading-tight truncate">{t.motto}</p>
+      </div>
+
+      <div className="absolute text-center" style={{ left: "51.172%", top: "12.01%", width: "36.719%" }}>
+        <p className="text-navy font-medium leading-[1.32] line-clamp-2" style={{ fontSize: "2.07mm" }}>
+          {staff.institution}
+        </p>
+        <div className="flex mt-[0.94mm]" style={{ height: "0.67mm" }}>
+          <div className="flex-1 bg-ci-orange" />
+          <div className="flex-1 bg-white" />
+          <div className="flex-1 bg-ci-green" />
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-[1mm] py-[1mm] overflow-hidden">
-        <p className="font-serif text-[3.6mm] font-bold uppercase tracking-wide leading-tight line-clamp-2">
+      <div className="absolute text-center" style={{ left: "51.172%", top: "35.294%", width: "36.719%" }}>
+        <p className="text-navy-deep font-bold truncate" style={{ fontSize: "2.94mm" }}>
           {staff.full_name}
         </p>
-        <p className="text-[2.6mm] text-ci-green-dark mt-[0.8mm] leading-tight line-clamp-2">
+        <p
+          className="text-navy italic font-medium mt-[1.07mm] leading-tight line-clamp-2"
+          style={{ fontSize: "2.21mm" }}
+        >
           {staff.function_title}
         </p>
       </div>
 
-      <div className="border-t border-black pt-[1mm] text-[2.1mm] leading-snug shrink-0">
-        <p className="truncate">
+      <div
+        className="absolute border-t border-navy-line"
+        style={{ left: "3.906%", right: "3.906%", bottom: "28.922%" }}
+      />
+
+      <div className="absolute leading-[1.44]" style={{ left: "3.906%", bottom: "7.108%", fontSize: "2.14mm" }}>
+        <p>{t.addressLine1}</p>
+        <p>{t.addressLine2}</p>
+        <p>{t.addressCountry}</p>
+      </div>
+
+      <div className="absolute" style={{ left: "51.172%", width: "36.719%", bottom: "7.108%", fontSize: "2.14mm" }}>
+        <div className="grid grid-cols-[auto_auto] gap-x-[1.74mm] gap-y-[0.2mm] w-fit mx-auto leading-[1.44]">
           {staff.phone_office && (
-            <a href={`tel:${staff.phone_office.replace(/\s+/g, "")}`} className="hover:underline">
-              {t.tel}: {staff.phone_office}
-            </a>
+            <>
+              <span>{t.tel}:</span>
+              <a href={`tel:${staff.phone_office.replace(/\s+/g, "")}`} className="hover:underline">
+                {staff.phone_office}
+              </a>
+            </>
           )}
-          {staff.phone_office && staff.phone_cell && " – "}
           {staff.phone_cell && (
-            <a href={`tel:${staff.phone_cell.replace(/\s+/g, "")}`} className="hover:underline">
-              {t.cel} : {staff.phone_cell}
-            </a>
+            <>
+              <span>{t.cel}:</span>
+              <a href={`tel:${staff.phone_cell.replace(/\s+/g, "")}`} className="hover:underline">
+                {staff.phone_cell}
+              </a>
+            </>
           )}
-        </p>
-        {staff.email && (
-          <p className="truncate">
-            {t.email} :{" "}
-            <a href={`mailto:${staff.email}`} className="hover:underline">
-              {staff.email}
-            </a>
-          </p>
-        )}
+          {staff.email && (
+            <>
+              <span>{t.email}:</span>
+              <a href={`mailto:${staff.email}`} className="hover:underline">
+                {staff.email}
+              </a>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -75,7 +101,7 @@ export function BusinessCardBack({
 
   return (
     <div
-      className={`${cardSizing} rounded-[3mm] bg-white text-black shadow-lg ring-1 ring-black/10 flex flex-col items-center justify-center gap-[1.5mm] p-[3.5mm] overflow-hidden print:shadow-none print:ring-0`}
+      className={`${cardSizing} ${ebGaramond.className} bg-card-cream text-navy-line shadow-lg ring-1 ring-black/10 flex flex-col items-center justify-center gap-[1.5mm] p-[3.5mm] overflow-hidden print:shadow-none print:ring-0`}
     >
       <Image
         src="/armoiries.png"
@@ -90,10 +116,12 @@ export function BusinessCardBack({
         alt={`QR code de la carte de visite de ${staff.full_name}`}
         className="h-[52%] w-auto shrink-0"
       />
-      <p className="font-serif text-[2.4mm] font-semibold text-center leading-tight line-clamp-1 max-w-full px-[2mm]">
+      <p className="text-navy-deep font-semibold text-center leading-tight line-clamp-1 max-w-full px-[2mm]" style={{ fontSize: "2.4mm" }}>
         {staff.full_name}
       </p>
-      <p className="text-[1.9mm] text-neutral-500 text-center leading-tight shrink-0">{t.scanForCard}</p>
+      <p className="text-navy text-center leading-tight shrink-0" style={{ fontSize: "1.9mm" }}>
+        {t.scanForCard}
+      </p>
     </div>
   );
 }

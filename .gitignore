@@ -32,3 +32,7 @@ yarn-error.log*
 # typescript
 next-env.d.ts
 *.tsbuildinfo
+
+# design reference material (not needed at runtime)
+/design_reference/
+*.zip
