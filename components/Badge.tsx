@@ -51,7 +51,7 @@ export function Badge({
           )}
         </div>
 
-        <p className="font-serif text-[3mm] font-bold uppercase leading-tight mt-[1.3mm] line-clamp-2">
+        <p className="font-serif text-[3mm] font-bold uppercase leading-tight mt-[3mm] line-clamp-2">
           {staff.full_name}
         </p>
         <p className="text-[2.3mm] text-ci-green-dark leading-tight mt-[0.5mm] line-clamp-2">
