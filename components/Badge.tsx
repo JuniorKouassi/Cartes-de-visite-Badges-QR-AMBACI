@@ -42,7 +42,7 @@ export function Badge({
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col items-center px-[3mm] py-[2mm] text-center overflow-hidden">
-        <div className="w-[22mm] h-[22mm] rounded-[2mm] border-[0.6mm] border-ci-green overflow-hidden bg-neutral-100 flex items-center justify-center shrink-0">
+        <div className="w-[26mm] h-[26mm] rounded-[2mm] border-[0.6mm] border-ci-green overflow-hidden bg-neutral-100 flex items-center justify-center shrink-0">
           {photoSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoSrc} alt={staff.full_name} className="w-full h-full object-cover" />
@@ -51,14 +51,14 @@ export function Badge({
           )}
         </div>
 
-        <p className="font-serif text-[3mm] font-bold uppercase leading-tight mt-[2mm] line-clamp-2">
+        <p className="font-serif text-[3mm] font-bold uppercase leading-tight mt-[1.3mm] line-clamp-2">
           {staff.full_name}
         </p>
         <p className="text-[2.3mm] text-ci-green-dark leading-tight mt-[0.5mm] line-clamp-2">
           {staff.function_title}
         </p>
 
-        <div className="mt-[2mm] w-full text-[1.9mm] leading-snug text-neutral-700 space-y-[0.5mm]">
+        <div className="mt-[1.4mm] w-full text-[1.9mm] leading-snug text-neutral-700 space-y-[0.5mm]">
           <p className="truncate">
             <span className="font-semibold">Matricule :</span> {staff.matricule}
           </p>
