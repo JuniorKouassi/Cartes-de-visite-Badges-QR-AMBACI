@@ -386,7 +386,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
       <div className="flex flex-col items-center gap-8">
         <div ref={frontRef}>
-          <BusinessCardFront staff={previewStaff} photoSrc={photoSrc} />
+          <BusinessCardFront staff={previewStaff} />
         </div>
         {cardQrSrc ? (
           <div ref={backRef}>

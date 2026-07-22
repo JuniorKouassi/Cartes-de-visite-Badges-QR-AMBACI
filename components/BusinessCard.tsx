@@ -4,17 +4,8 @@ import { cardStrings, type Lang } from "@/lib/i18n";
 
 const cardSizing = "w-[85.6mm] h-[54mm] max-w-full aspect-[85.6/54]";
 
-export function BusinessCardFront({
-  staff,
-  lang = "fr",
-  photoSrc,
-}: {
-  staff: Staff;
-  lang?: Lang;
-  photoSrc?: string | null;
-}) {
+export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?: Lang }) {
   const t = cardStrings[lang];
-  const resolvedPhotoSrc = photoSrc !== undefined ? photoSrc : staff.photo_key ? `/api/photo/${staff.photo_key}` : null;
 
   return (
     <div
@@ -35,23 +26,13 @@ export function BusinessCardFront({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex items-center justify-center gap-[3mm] px-[1mm] py-[1mm] overflow-hidden">
-        {resolvedPhotoSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={resolvedPhotoSrc}
-            alt={staff.full_name}
-            className="w-[16mm] h-[16mm] rounded-full object-cover ring-2 ring-ci-green shrink-0"
-          />
-        )}
-        <div className="min-w-0 text-center">
-          <p className="font-serif text-[3.4mm] font-bold uppercase tracking-wide leading-tight line-clamp-2">
-            {staff.full_name}
-          </p>
-          <p className="text-[2.5mm] text-ci-green-dark mt-[0.8mm] leading-tight line-clamp-2">
-            {staff.function_title}
-          </p>
-        </div>
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-[1mm] py-[1mm] overflow-hidden">
+        <p className="font-serif text-[3.6mm] font-bold uppercase tracking-wide leading-tight line-clamp-2">
+          {staff.full_name}
+        </p>
+        <p className="text-[2.6mm] text-ci-green-dark mt-[0.8mm] leading-tight line-clamp-2">
+          {staff.function_title}
+        </p>
       </div>
 
       <div className="border-t border-black pt-[1mm] text-[2.1mm] leading-snug shrink-0">
