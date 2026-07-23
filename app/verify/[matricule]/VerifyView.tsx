@@ -100,7 +100,7 @@ export function VerifyView({
         </div>
       )}
 
-      <p className="text-xs text-neutral-400">Ambassade / Mission permanente de Côte d&apos;Ivoire - Vienne</p>
+      <p className="text-xs text-neutral-400">{t.footer}</p>
     </main>
   );
 }

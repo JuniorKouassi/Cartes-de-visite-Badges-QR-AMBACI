@@ -39,6 +39,7 @@ export const verifyStrings: Record<Lang, Record<string, string>> = {
     invalidReason: "Ce badge a été désactivé ou a expiré",
     matricule: "Matricule",
     institution: "Institution",
+    footer: "Ambassade / Mission permanente de Côte d'Ivoire - Autriche",
   },
   en: {
     title: "Badge verification",
@@ -49,6 +50,7 @@ export const verifyStrings: Record<Lang, Record<string, string>> = {
     invalidReason: "This badge has been deactivated or has expired",
     matricule: "Staff ID",
     institution: "Institution",
+    footer: "Embassy / Permanent Mission of Côte d'Ivoire - Austria",
   },
 };
 
