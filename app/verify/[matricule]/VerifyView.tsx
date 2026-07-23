@@ -68,7 +68,7 @@ export function VerifyView({
         <img
           src={`/api/photo/${staff.photo_key}`}
           alt={staff.full_name}
-          className={`w-44 h-44 rounded-full object-cover object-top shadow-lg ring-4 ${
+          className={`w-44 h-44 rounded-full object-cover shadow-lg ring-4 ${
             valid ? "ring-ci-green" : "ring-red-600"
           }`}
         />
