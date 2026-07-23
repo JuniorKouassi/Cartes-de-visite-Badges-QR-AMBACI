@@ -42,7 +42,7 @@ export function Badge({
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col items-center px-[3mm] py-[2mm] text-center overflow-hidden">
-        <div className="w-[26mm] h-[26mm] rounded-[2mm] border-[0.6mm] border-ci-green overflow-hidden bg-neutral-100 flex items-center justify-center shrink-0">
+        <div className="w-[20.2mm] h-[26mm] rounded-[2mm] border-[0.6mm] border-ci-green overflow-hidden bg-neutral-100 flex items-center justify-center shrink-0">
           {photoSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoSrc} alt={staff.full_name} className="w-full h-full object-cover" />
