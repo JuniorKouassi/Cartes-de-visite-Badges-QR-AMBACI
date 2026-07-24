@@ -63,9 +63,6 @@ export function Badge({
             <span className="font-bold">Matricule :</span> {staff.matricule}
           </p>
           <p className="truncate">
-            <span className="font-bold">Institution :</span> {staff.institution}
-          </p>
-          <p className="truncate">
             <span className="font-bold">Valide jusqu&apos;au :</span> {formatDate(staff.valid_until)}
           </p>
         </div>
