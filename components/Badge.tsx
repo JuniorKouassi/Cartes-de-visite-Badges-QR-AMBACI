@@ -58,7 +58,7 @@ export function Badge({
           {staff.function_title}
         </p>
 
-        <div className="mt-[1.4mm] w-full text-[1.9mm] leading-snug text-neutral-700 space-y-[0.5mm]">
+        <div className="mt-[1.4mm] w-full text-[2.3mm] leading-snug text-neutral-700 space-y-[0.5mm]">
           <p className="truncate">
             <span className="font-bold">Matricule :</span> {staff.matricule}
           </p>
