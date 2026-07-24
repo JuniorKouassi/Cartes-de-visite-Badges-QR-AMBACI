@@ -3,3 +3,9 @@
 # "minimal" (default, recommended) shows only a authentic/expired banner on /verify/[matricule].
 # "full" also shows photo, matricule, function and validity to whoever scans the badge QR.
 VERIFY_MODE=minimal
+
+# Admin login (/login) — protects /admin and the /api/staff endpoints.
+# In production these are set as Cloudflare secrets (wrangler secret put), never committed.
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change-me
+SESSION_SECRET=any-long-random-string
