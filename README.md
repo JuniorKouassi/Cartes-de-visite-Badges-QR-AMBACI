@@ -19,7 +19,7 @@ Voir [`BUILD_SPEC.md`](./BUILD_SPEC.md) pour la spécification complète.
 
 ```bash
 npm install
-cp .dev.vars.example .dev.vars   # renseigner ADMIN_EMAIL / ADMIN_PASSWORD / SESSION_SECRET
+cp .dev.vars.example .dev.vars   # renseigner ADMIN_USERS / SESSION_SECRET
 
 # Appliquer le schéma à la base D1 locale (émulée par wrangler)
 npx wrangler d1 execute ambaci-cartes --local --file=./migrations/0001_init.sql
@@ -74,8 +74,8 @@ dans le tableau de bord Cloudflare.
 ### 5. Secrets d'authentification admin
 
 ```bash
-npx wrangler secret put ADMIN_EMAIL
-npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put ADMIN_USERS
+# valeur : un tableau JSON, ex. [{"email":"a@x.com","password":"..."},{"email":"b@x.com","password":"..."}]
 npx wrangler secret put SESSION_SECRET   # chaîne aléatoire longue, ex: openssl rand -hex 32
 ```
 
@@ -84,15 +84,17 @@ Cloudflare (production) et `.dev.vars` (local, gitignored).
 
 ## Authentification admin
 
-`/admin` et toutes les routes `/api/staff/*` sont protégées par `proxy.ts` (middleware Next), qui
-vérifie un cookie de session signé (HMAC SHA-256, `lib/auth.ts`). La connexion se fait sur `/login`
-avec l'email + mot de passe définis via les secrets ci-dessus. Pas de service tiers, pas de compte
-à créer ailleurs.
+`/admin` et toutes les routes `/api/staff/*` sont protégées par `middleware.ts`, qui vérifie un
+cookie de session signé (HMAC SHA-256, `lib/auth.ts`). La connexion se fait sur `/login` avec l'un
+des couples email + mot de passe définis dans le secret `ADMIN_USERS` (JSON, plusieurs admins
+possibles). La session expire après **30 minutes d'inactivité** (elle se renouvelle automatiquement
+à chaque requête authentifiée) — pas de durée fixe depuis la connexion.
 
-**Réinitialiser le mot de passe** (pas de réinitialisation par e-mail — un seul admin) :
+**Ajouter ou retirer un admin, ou réinitialiser un mot de passe** (pas de réinitialisation par
+e-mail) :
 
 ```bash
-npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put ADMIN_USERS
 ```
 
 **Optionnel — défense en profondeur** : on peut ajouter **Cloudflare Access** (Zero Trust) devant
@@ -102,7 +104,7 @@ npx wrangler secret put ADMIN_PASSWORD
 
 - [ ] Le nom de domaine (ou sous-chemin) à router vers le Worker.
 - [ ] `database_id` D1 et bucket R2 créés (étape 1 ci-dessus) reportés dans `wrangler.jsonc`.
-- [ ] Secrets `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `SESSION_SECRET` définis (étape 5 ci-dessus).
+- [ ] Secrets `ADMIN_USERS` / `SESSION_SECRET` définis (étape 5 ci-dessus).
 
 `public/armoiries.png` (armoiries officielles) est déjà inclus dans le dépôt.
 
@@ -116,7 +118,7 @@ npx wrangler secret put ADMIN_PASSWORD
 - `app/api/staff` — endpoints CRUD ; `app/api/staff/[id]/photo` — upload R2 ; `app/api/photo/[...key]` — service des photos.
 - `app/api/auth` — login/logout (cookie de session signé).
 - `app/api/translate` — traduction FR→EN à la volée (Cloudflare Workers AI) pour la carte de visite publique.
-- `proxy.ts` — middleware protégeant `/admin/*` et `/api/staff/*`.
+- `middleware.ts` — protège `/admin/*` et `/api/staff/*` (runtime Edge, requis par OpenNext).
 - `lib/` — accès D1 (`db.ts`, `staff.ts`), auth (`auth.ts`), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), traduction (`translate.ts`).
 - `components/` — `BusinessCard.tsx` (recto/verso, 85,6×54 mm), `Badge.tsx` (portrait CR80, 54×85,6 mm).
 - `migrations/` — schéma D1 (table `staff`, puis colonnes `institution_en`/`function_title_en`).

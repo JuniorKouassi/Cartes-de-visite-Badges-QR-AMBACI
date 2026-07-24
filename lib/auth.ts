@@ -1,5 +1,10 @@
 export const SESSION_COOKIE = "ambaci_admin_session";
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+const SESSION_TTL_SECONDS = 30 * 60; // 30 minutes, refreshed on each authenticated request
+
+export interface AdminUser {
+  email: string;
+  password: string;
+}
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -45,13 +50,23 @@ export async function verifySessionToken(token: string | undefined, secret: stri
   return true;
 }
 
-export function verifyCredentials(
-  email: string,
-  password: string,
-  expectedEmail: string,
-  expectedPassword: string
-): boolean {
-  return timingSafeEqual(email.trim().toLowerCase(), expectedEmail.trim().toLowerCase()) && timingSafeEqual(password, expectedPassword);
+export function parseAdminUsers(json: string): AdminUser[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (u): u is AdminUser => typeof u?.email === "string" && typeof u?.password === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function verifyCredentials(email: string, password: string, users: AdminUser[]): boolean {
+  const normalizedEmail = email.trim().toLowerCase();
+  return users.some(
+    (u) => timingSafeEqual(normalizedEmail, u.email.trim().toLowerCase()) && timingSafeEqual(password, u.password)
+  );
 }
 
 export { SESSION_TTL_SECONDS };

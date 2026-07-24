@@ -6,6 +6,6 @@ VERIFY_MODE=minimal
 
 # Admin login (/login) — protects /admin and the /api/staff endpoints.
 # In production these are set as Cloudflare secrets (wrangler secret put), never committed.
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=change-me
+# ADMIN_USERS is a JSON array so multiple admins can log in; add more entries as needed.
+ADMIN_USERS=[{"email":"admin@example.com","password":"change-me"}]
 SESSION_SECRET=any-long-random-string

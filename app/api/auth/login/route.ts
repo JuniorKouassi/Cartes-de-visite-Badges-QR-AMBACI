@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { createSessionToken, verifyCredentials, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth";
+import { createSessionToken, parseAdminUsers, verifyCredentials, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth";
 
 export async function POST(request: Request) {
   const { env } = getCloudflareContext();
@@ -10,7 +10,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email et mot de passe requis" }, { status: 400 });
   }
 
-  const valid = verifyCredentials(body.email, body.password, env.ADMIN_EMAIL, env.ADMIN_PASSWORD);
+  const users = parseAdminUsers(env.ADMIN_USERS);
+  const valid = verifyCredentials(body.email, body.password, users);
   if (!valid) {
     return NextResponse.json({ error: "Email ou mot de passe incorrect" }, { status: 401 });
   }

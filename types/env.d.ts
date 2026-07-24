@@ -1,5 +1,5 @@
 interface CloudflareEnv {
-  ADMIN_EMAIL: string;
-  ADMIN_PASSWORD: string;
+  // JSON array of { email, password }, e.g. [{"email":"a@x.com","password":"..."}]
+  ADMIN_USERS: string;
   SESSION_SECRET: string;
 }
