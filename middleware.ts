@@ -2,11 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 
+export const runtime = "experimental-edge";
+
 export const config = {
   matcher: ["/admin/:path*", "/api/staff/:path*"],
 };
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { env } = getCloudflareContext();
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const authenticated = await verifySessionToken(token, env.SESSION_SECRET);
