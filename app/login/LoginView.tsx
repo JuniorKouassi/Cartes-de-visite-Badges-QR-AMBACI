@@ -205,9 +205,18 @@ export function LoginView() {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="mb-6 h-20 w-20 rounded-full bg-white shadow-lg shadow-ci-green/20 flex items-center justify-center p-3"
+                className="mb-6 relative w-36 h-36 rounded-[1.75rem] overflow-hidden shadow-[0_25px_50px_-15px_rgba(23,38,77,0.35)]"
               >
-                <Image src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" width={64} height={64} className="w-full h-auto" />
+                <div className="absolute top-1/2 left-1/2 w-32 h-32 rounded-full opacity-90 blur-[16px] animate-ambaci-blob bg-gradient-to-r from-ci-orange via-white to-ci-green" />
+                <div className="absolute inset-[5px] bg-white/95 backdrop-blur-2xl rounded-[1.4rem] ring-2 ring-white flex items-center justify-center p-4">
+                  <Image
+                    src="/armoiries.png"
+                    alt="Armoiries de Côte d'Ivoire"
+                    width={112}
+                    height={112}
+                    className="w-full h-auto"
+                  />
+                </div>
               </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: -20 }}

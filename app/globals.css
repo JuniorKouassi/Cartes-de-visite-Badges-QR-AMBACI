@@ -24,6 +24,28 @@ body {
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
+@keyframes ambaci-blob {
+  0% {
+    transform: translate(-100%, -100%);
+  }
+  25% {
+    transform: translate(0%, -100%);
+  }
+  50% {
+    transform: translate(0%, 0%);
+  }
+  75% {
+    transform: translate(-100%, 0%);
+  }
+  100% {
+    transform: translate(-100%, -100%);
+  }
+}
+
+.animate-ambaci-blob {
+  animation: ambaci-blob 5s linear infinite;
+}
+
 @media print {
   @page {
     margin: 0;
