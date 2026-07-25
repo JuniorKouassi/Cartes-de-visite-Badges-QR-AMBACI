@@ -100,17 +100,17 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="flex gap-1 rounded-full bg-white/90 backdrop-blur-sm p-1 shadow-lg ring-1 ring-black/10 print:hidden">
+      <div className="flex gap-1 rounded-full bg-white/90 backdrop-blur-sm p-0.5 shadow-lg ring-1 ring-black/10 print:hidden">
         {(["fr", "en"] as const).map((code) => (
           <button
             key={code}
             type="button"
             onClick={() => changeLang(code)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               lang === code ? "bg-ci-green text-white shadow-sm" : "text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            <FlagIcon code={code} />
+            <FlagIcon code={code} className="h-3 w-4" />
             {code.toUpperCase()}
           </button>
         ))}
@@ -148,15 +148,15 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
         {translating ? (lang === "en" ? "Translating…" : "Traduction…") : t.flipHint}
       </p>
 
-      <div className="print:hidden flex flex-col items-center gap-4 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-5 shadow-lg ring-1 ring-black/10">
+      <div className="print:hidden flex flex-col items-center gap-2 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg ring-1 ring-black/10">
         <a
           href={`/c/${staff.slug}/vcard`}
-          className="inline-flex items-center gap-2 rounded-full bg-ci-green px-6 py-3 text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
+          className="inline-flex items-center gap-2 rounded-full bg-ci-green px-5 py-2 text-sm text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
         >
           {t.saveContact}
         </a>
 
-        <div className="flex gap-4 text-sm">
+        <div className="flex gap-3 text-xs">
           <button
             type="button"
             disabled={exporting}
