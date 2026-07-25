@@ -1,8 +1,17 @@
 import { LogoutButton } from "./LogoutButton";
 
+function AdminBackground() {
+  return (
+    <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
+      <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,#ffdcae,transparent)]" />
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className="relative min-h-screen">
+      <AdminBackground />
       <div className="bg-gradient-to-b from-ci-green to-ci-green-dark px-6 py-2 flex items-center justify-between">
         <span className="text-white/80 text-xs">Administration — AMBACI Vienne</span>
         <LogoutButton />
