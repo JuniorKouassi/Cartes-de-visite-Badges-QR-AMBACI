@@ -6,6 +6,7 @@ import { toJpeg, toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
 import { Badge } from "@/components/Badge";
+import { FlagIcon } from "@/components/FlagIcon";
 import { DEFAULT_INSTITUTION, DEFAULT_INSTITUTION_EN, type Staff } from "@/lib/staff";
 import type { Lang } from "@/lib/i18n";
 
@@ -416,12 +417,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
       <div className="flex flex-col items-center gap-8">
         <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
-          {(
-            [
-              { code: "fr" as const, flag: "🇫🇷" },
-              { code: "en" as const, flag: "🇬🇧" },
-            ]
-          ).map(({ code, flag }) => (
+          {(["fr", "en"] as const).map((code) => (
             <button
               key={code}
               type="button"
@@ -430,7 +426,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
                 previewLang === code ? "bg-ci-green text-white" : "text-neutral-600 hover:bg-neutral-100"
               }`}
             >
-              <span className="text-base leading-none">{flag}</span>
+              <FlagIcon code={code} />
               {code.toUpperCase()}
             </button>
           ))}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { dateLocale, verifyStrings, type Lang } from "@/lib/i18n";
 import { localizedFunctionTitle, localizedInstitution, type Staff } from "@/lib/staff";
+import { FlagIcon } from "@/components/FlagIcon";
 
 const LANG_STORAGE_KEY = "ambaci-card-lang";
 
@@ -41,12 +42,7 @@ export function VerifyView({
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 gap-6 text-center">
       <div className="flex gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/10">
-        {(
-          [
-            { code: "fr", flag: "🇫🇷" },
-            { code: "en", flag: "🇬🇧" },
-          ] as const
-        ).map(({ code, flag }) => (
+        {(["fr", "en"] as const).map((code) => (
           <button
             key={code}
             type="button"
@@ -55,7 +51,7 @@ export function VerifyView({
               lang === code ? "bg-ci-green text-white shadow-sm" : "text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            <span className="text-base leading-none">{flag}</span>
+            <FlagIcon code={code} />
             {code.toUpperCase()}
           </button>
         ))}

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toJpeg, toPng } from "html-to-image";
 import { BusinessCardFront, BusinessCardBack } from "@/components/BusinessCard";
+import { FlagIcon } from "@/components/FlagIcon";
 import { cardStrings, type Lang } from "@/lib/i18n";
 import type { Staff } from "@/lib/staff";
 
@@ -100,12 +101,7 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex gap-1 rounded-full bg-white/90 backdrop-blur-sm p-1 shadow-lg ring-1 ring-black/10 print:hidden">
-        {(
-          [
-            { code: "fr", flag: "🇫🇷" },
-            { code: "en", flag: "🇬🇧" },
-          ] as const
-        ).map(({ code, flag }) => (
+        {(["fr", "en"] as const).map((code) => (
           <button
             key={code}
             type="button"
@@ -114,7 +110,7 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
               lang === code ? "bg-ci-green text-white shadow-sm" : "text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            <span className="text-base leading-none">{flag}</span>
+            <FlagIcon code={code} />
             {code.toUpperCase()}
           </button>
         ))}
