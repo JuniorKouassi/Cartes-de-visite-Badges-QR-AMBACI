@@ -141,8 +141,11 @@ export function LoginView() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl overflow-hidden rounded-2xl flex bg-white shadow-xl"
+        className="relative w-full max-w-4xl rounded-[1.9rem] p-[6px] overflow-hidden shadow-2xl"
       >
+        <div className="absolute top-1/2 left-1/2 w-[70%] aspect-square rounded-full opacity-90 blur-[40px] animate-ambaci-blob bg-gradient-to-r from-ci-orange via-white to-ci-green" />
+
+        <div className="relative z-10 w-full h-full overflow-hidden rounded-[1.6rem] flex bg-white">
         <div className="hidden md:block w-1/2 h-[600px] relative overflow-hidden border-r border-neutral-100">
           <div className="absolute inset-0 bg-gradient-to-br from-ci-green-pale to-ci-orange-pale">
             <DotMap />
@@ -151,18 +154,15 @@ export function LoginView() {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="mb-6 relative w-36 h-36 rounded-[1.75rem] overflow-hidden shadow-[0_25px_50px_-15px_rgba(23,38,77,0.35)]"
+                className="mb-6 w-36 h-36 rounded-[1.75rem] bg-white shadow-[0_25px_50px_-15px_rgba(23,38,77,0.35)] flex items-center justify-center p-4"
               >
-                <div className="absolute top-1/2 left-1/2 w-32 h-32 rounded-full opacity-90 blur-[16px] animate-ambaci-blob bg-gradient-to-r from-ci-orange via-white to-ci-green" />
-                <div className="absolute inset-[5px] bg-white/95 backdrop-blur-2xl rounded-[1.4rem] ring-2 ring-white flex items-center justify-center p-4">
-                  <Image
-                    src="/armoiries.png"
-                    alt="Armoiries de Côte d'Ivoire"
-                    width={112}
-                    height={112}
-                    className="w-full h-auto"
-                  />
-                </div>
+                <Image
+                  src="/armoiries.png"
+                  alt="Armoiries de Côte d'Ivoire"
+                  width={112}
+                  height={112}
+                  className="w-full h-auto"
+                />
               </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: -20 }}
@@ -276,6 +276,7 @@ export function LoginView() {
               </div>
             </form>
           </motion.div>
+        </div>
         </div>
       </motion.div>
     </div>
