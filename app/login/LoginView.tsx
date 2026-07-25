@@ -35,18 +35,9 @@ function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElemen
   );
 }
 
-type RoutePoint = { x: number; y: number; delay: number };
-
 function DotMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  const routes: { start: RoutePoint; end: RoutePoint; color: string }[] = [
-    { start: { x: 100, y: 150, delay: 0 }, end: { x: 200, y: 80, delay: 2 }, color: "#F77F00" },
-    { start: { x: 200, y: 80, delay: 2 }, end: { x: 260, y: 120, delay: 4 }, color: "#F77F00" },
-    { start: { x: 50, y: 50, delay: 1 }, end: { x: 150, y: 180, delay: 3 }, color: "#009A44" },
-    { start: { x: 280, y: 60, delay: 0.5 }, end: { x: 180, y: 180, delay: 2.5 }, color: "#009A44" },
-  ];
 
   function generateDots(width: number, height: number) {
     const dots = [];
@@ -92,58 +83,13 @@ function DotMap() {
     if (!canvas || !ctx) return;
 
     const dots = generateDots(dimensions.width, dimensions.height);
-    let animationFrameId: number;
-    let startTime = Date.now();
-
-    function draw() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-
-      dots.forEach((dot) => {
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 154, 68, ${dot.opacity})`;
-        ctx.fill();
-      });
-
-      const currentTime = (Date.now() - startTime) / 1000;
-      routes.forEach((route) => {
-        const elapsed = currentTime - route.start.delay;
-        if (elapsed <= 0) return;
-
-        const progress = Math.min(elapsed / 3, 1);
-        const x = route.start.x + (route.end.x - route.start.x) * progress;
-        const y = route.start.y + (route.end.y - route.start.y) * progress;
-
-        ctx.beginPath();
-        ctx.moveTo(route.start.x, route.start.y);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = route.color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(route.start.x, route.start.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = route.color;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = route.color;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = route.color === "#F77F00" ? "rgba(247, 127, 0, 0.35)" : "rgba(0, 154, 68, 0.35)";
-        ctx.fill();
-      });
-
-      if (currentTime > 15) startTime = Date.now();
-      animationFrameId = requestAnimationFrame(draw);
-    }
-
-    draw();
-    return () => cancelAnimationFrame(animationFrameId);
+    ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+    dots.forEach((dot) => {
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0, 154, 68, ${dot.opacity})`;
+      ctx.fill();
+    });
   }, [dimensions]);
 
   return (
