@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { localizedFunctionTitle, localizedInstitution, type Staff } from "@/lib/staff";
 import { cardStrings, type Lang } from "@/lib/i18n";
 import { ebGaramond } from "@/lib/fonts";
@@ -15,12 +14,11 @@ export function BusinessCardFront({ staff, lang = "fr" }: { staff: Staff; lang?:
       className={`${cardSizing} ${ebGaramond.className} relative bg-card-cream text-navy-line shadow-lg ring-1 ring-black/10 overflow-hidden print:shadow-none print:ring-0`}
     >
       <div className="absolute" style={{ left: "4.531%", top: "6.373%", width: "27.5%", height: "39.216%" }}>
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source needed for crisp print export */}
+        <img
           src="/armoiries.png"
           alt="Armoiries de Côte d'Ivoire"
-          fill
-          sizes="30vw"
-          className="object-contain object-left-top"
+          className="w-full h-full object-contain object-left-top"
         />
       </div>
 
@@ -105,11 +103,10 @@ export function BusinessCardBack({
     <div
       className={`${cardSizing} ${ebGaramond.className} bg-card-cream text-navy-line shadow-lg ring-1 ring-black/10 flex flex-col items-center justify-center gap-[1.5mm] p-[3.5mm] overflow-hidden print:shadow-none print:ring-0`}
     >
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source needed for crisp print export */}
+      <img
         src="/armoiries.png"
         alt="Armoiries de Côte d'Ivoire"
-        width={40}
-        height={40}
         className="h-[6mm] w-auto object-contain shrink-0"
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}

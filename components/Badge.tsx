@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Staff } from "@/lib/staff";
 import { isBadgeValid } from "@/lib/staff";
 
@@ -23,11 +22,10 @@ export function Badge({
   return (
     <div className="w-[54mm] h-[85.6mm] max-w-full aspect-[54/85.6] rounded-[3mm] bg-white text-black shadow-lg ring-1 ring-black/10 flex flex-col overflow-hidden print:shadow-none print:ring-0">
       <div className="bg-gradient-to-b from-ci-green to-ci-green-dark text-white px-[2.5mm] py-[1.8mm] flex items-center gap-[1.5mm] shrink-0">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source needed for crisp print export */}
+        <img
           src="/armoiries.png"
           alt="Armoiries de Côte d'Ivoire"
-          width={40}
-          height={40}
           className="h-[6mm] w-auto object-contain shrink-0"
         />
         <p className="min-w-0 flex-1 text-center font-serif text-[1.9mm] font-semibold leading-[1.15] line-clamp-2">

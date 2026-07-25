@@ -76,8 +76,8 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
     try {
       const dataUrl =
         format === "png"
-          ? await toPng(node, { pixelRatio: 3 })
-          : await toJpeg(node, { pixelRatio: 3, backgroundColor: "#ffffff", quality: 0.95 });
+          ? await toPng(node, { pixelRatio: 4 })
+          : await toJpeg(node, { pixelRatio: 4, backgroundColor: "#ffffff", quality: 0.98 });
 
       const link = document.createElement("a");
       const side = flipped ? "verso" : "recto";

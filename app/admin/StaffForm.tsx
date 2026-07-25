@@ -10,7 +10,7 @@ import { FlagIcon } from "@/components/FlagIcon";
 import { DEFAULT_INSTITUTION, DEFAULT_INSTITUTION_EN, type Staff } from "@/lib/staff";
 import type { Lang } from "@/lib/i18n";
 
-const EXPORT_PIXEL_RATIO = 4;
+const EXPORT_PIXEL_RATIO = 6;
 const CARD_MM = { w: 85.6, h: 54 };
 const BADGE_MM = { w: 54, h: 85.6 };
 
