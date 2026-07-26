@@ -55,6 +55,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
   const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null);
   const [exportingKey, setExportingKey] = useState<string | null>(null);
   const [previewLang, setPreviewLang] = useState<Lang>("fr");
+  const [zoomed, setZoomed] = useState<"front" | "back" | "badge" | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,19 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       if (pendingPhotoUrl) URL.revokeObjectURL(pendingPhotoUrl);
     };
   }, [pendingPhotoUrl]);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    document.body.style.overflow = "hidden";
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setZoomed(null);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [zoomed]);
 
   const previewStaff: Staff = {
     id: staff?.id ?? 0,
@@ -433,21 +447,67 @@ export function StaffForm({ staff }: { staff?: Staff }) {
         </div>
 
         <div ref={frontRef}>
-          <BusinessCardFront staff={previewStaff} lang={previewLang} />
+          <button
+            type="button"
+            onClick={() => setZoomed("front")}
+            className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+            aria-label="Agrandir le recto de la carte"
+          >
+            <BusinessCardFront staff={previewStaff} lang={previewLang} />
+          </button>
         </div>
         {cardQrSrc ? (
           <div ref={backRef}>
-            <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
+            <button
+              type="button"
+              onClick={() => setZoomed("back")}
+              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+              aria-label="Agrandir le verso de la carte"
+            >
+              <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
+            </button>
           </div>
         ) : (
           <p className="text-sm text-neutral-400">QR de la carte disponible après enregistrement</p>
         )}
         {badgeQrSrc ? (
           <div ref={badgeRef}>
-            <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
+            <button
+              type="button"
+              onClick={() => setZoomed("badge")}
+              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+              aria-label="Agrandir le badge"
+            >
+              <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
+            </button>
           </div>
         ) : (
           <p className="text-sm text-neutral-400">Badge disponible après enregistrement</p>
+        )}
+
+        {zoomed && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-8 cursor-zoom-out"
+            onClick={() => setZoomed(null)}
+          >
+            <button
+              type="button"
+              onClick={() => setZoomed(null)}
+              className="absolute top-5 right-5 text-white/80 hover:text-white text-3xl leading-none"
+              aria-label="Fermer"
+            >
+              ×
+            </button>
+            <div className="scale-[2] sm:scale-[2.4]">
+              {zoomed === "front" && <BusinessCardFront staff={previewStaff} lang={previewLang} />}
+              {zoomed === "back" && cardQrSrc && (
+                <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
+              )}
+              {zoomed === "badge" && badgeQrSrc && (
+                <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
+              )}
+            </div>
+          </div>
         )}
 
         {staff && cardQrSrc && badgeQrSrc && (
