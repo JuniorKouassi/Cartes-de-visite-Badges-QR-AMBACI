@@ -148,15 +148,15 @@ export function CardView({ staff, qrSrc }: { staff: Staff; qrSrc: string }) {
         {translating ? (lang === "en" ? "Translating…" : "Traduction…") : t.flipHint}
       </p>
 
-      <div className="print:hidden flex flex-col items-center gap-2 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg ring-1 ring-black/10">
+      <div className="print:hidden flex flex-col items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg ring-1 ring-black/10">
         <a
           href={`/c/${staff.slug}/vcard`}
-          className="inline-flex items-center gap-2 rounded-full bg-ci-green px-5 py-2 text-sm text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
+          className="inline-flex items-center gap-2 rounded-full bg-ci-green px-4 py-1.5 text-xs text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
         >
           {t.saveContact}
         </a>
 
-        <div className="flex gap-3 text-xs">
+        <div className="flex gap-2 text-[11px]">
           <button
             type="button"
             disabled={exporting}
