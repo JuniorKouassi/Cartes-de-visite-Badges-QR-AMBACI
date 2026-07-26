@@ -80,6 +80,29 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     };
   }, [zoomed]);
 
+  // On mobile, the fixed desktop zoom scale can overflow the viewport (the
+  // landscape card is already ~324px wide at 1x). Compute a scale that fits
+  // cleanly within the screen instead. Desktop keeps its own CSS scale.
+  const [mobileZoomScale, setMobileZoomScale] = useState(1);
+  useEffect(() => {
+    if (!zoomed || typeof window === "undefined") return;
+
+    function computeScale() {
+      if (window.innerWidth >= 640) return;
+      const MM_TO_PX = 3.7795;
+      const natural = zoomed === "badge" ? BADGE_MM : CARD_MM;
+      const naturalWidthPx = natural.w * MM_TO_PX;
+      const naturalHeightPx = natural.h * MM_TO_PX;
+      const availableWidth = window.innerWidth - 32;
+      const availableHeight = window.innerHeight - 96;
+      setMobileZoomScale(Math.max(0.5, Math.min(availableWidth / naturalWidthPx, availableHeight / naturalHeightPx)));
+    }
+
+    computeScale();
+    window.addEventListener("resize", computeScale);
+    return () => window.removeEventListener("resize", computeScale);
+  }, [zoomed]);
+
   const previewStaff: Staff = {
     id: staff?.id ?? 0,
     slug: staff?.slug ?? "apercu",
@@ -487,7 +510,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
         {zoomed && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-8 cursor-zoom-out"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-8 cursor-zoom-out"
             onClick={() => setZoomed(null)}
           >
             <button
@@ -498,7 +521,10 @@ export function StaffForm({ staff }: { staff?: Staff }) {
             >
               ×
             </button>
-            <div className="[zoom:2] sm:[zoom:2.4]">
+            <div
+              className="sm:[zoom:2.4]"
+              style={typeof window !== "undefined" && window.innerWidth < 640 ? { zoom: mobileZoomScale } : undefined}
+            >
               {zoomed === "front" && <BusinessCardFront staff={previewStaff} lang={previewLang} />}
               {zoomed === "back" && cardQrSrc && (
                 <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
