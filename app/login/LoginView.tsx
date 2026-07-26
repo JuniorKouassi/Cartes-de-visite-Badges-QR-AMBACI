@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState, type ButtonHTMLAttributes, type InputHTMLAttributes } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { ebGaramond } from "@/lib/fonts";
@@ -156,13 +155,8 @@ export function LoginView() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="mb-6 w-36 h-36 flex items-center justify-center drop-shadow-[0_15px_25px_rgba(23,38,77,0.3)]"
               >
-                <Image
-                  src="/armoiries.png"
-                  alt="Armoiries de Côte d'Ivoire"
-                  width={144}
-                  height={144}
-                  className="w-full h-auto"
-                />
+                {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source for crisp rendering */}
+                <img src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" className="w-full h-auto" />
               </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: -20 }}

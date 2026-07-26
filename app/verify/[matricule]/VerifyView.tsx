@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { dateLocale, verifyStrings, type Lang } from "@/lib/i18n";
 import { localizedFunctionTitle, localizedInstitution, type Staff } from "@/lib/staff";
 import { FlagIcon } from "@/components/FlagIcon";
@@ -57,7 +56,8 @@ export function VerifyView({
         ))}
       </div>
 
-      <Image src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" width={72} height={72} className="h-16 w-auto" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source for crisp rendering */}
+      <img src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" className="h-16 w-auto" />
 
       {staff.photo_key && (
         // eslint-disable-next-line @next/next/no-img-element
