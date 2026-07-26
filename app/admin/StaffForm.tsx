@@ -450,7 +450,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
           <button
             type="button"
             onClick={() => setZoomed("front")}
-            className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+            className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] [transform:translateZ(0)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
             aria-label="Agrandir le recto de la carte"
           >
             <BusinessCardFront staff={previewStaff} lang={previewLang} />
@@ -461,7 +461,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
             <button
               type="button"
               onClick={() => setZoomed("back")}
-              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] [transform:translateZ(0)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
               aria-label="Agrandir le verso de la carte"
             >
               <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
@@ -475,7 +475,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
             <button
               type="button"
               onClick={() => setZoomed("badge")}
-              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
+              className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] [transform:translateZ(0)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[3mm]"
               aria-label="Agrandir le badge"
             >
               <Badge staff={previewStaff} photoSrc={photoSrc} qrSrc={badgeQrSrc} />
@@ -498,7 +498,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
             >
               ×
             </button>
-            <div className="scale-[2] sm:scale-[2.4]">
+            <div className="[zoom:2] sm:[zoom:2.4]">
               {zoomed === "front" && <BusinessCardFront staff={previewStaff} lang={previewLang} />}
               {zoomed === "back" && cardQrSrc && (
                 <BusinessCardBack staff={previewStaff} qrSrc={cardQrSrc} lang={previewLang} />
