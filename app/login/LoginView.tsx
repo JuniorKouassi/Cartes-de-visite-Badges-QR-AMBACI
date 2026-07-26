@@ -180,6 +180,18 @@ export function LoginView() {
 
         <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-white">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <div className="md:hidden flex flex-col items-center text-center mb-8">
+              <div className="w-20 h-20 mb-3 drop-shadow-[0_10px_18px_rgba(23,38,77,0.25)]">
+                {/* eslint-disable-next-line @next/next/no-img-element -- full-resolution source for crisp rendering */}
+                <img src="/armoiries.png" alt="Armoiries de Côte d'Ivoire" className="w-full h-auto" />
+              </div>
+              <h2 className="text-xl font-bold text-navy-deep">AMBACI Vienne</h2>
+              <p className="text-sm text-neutral-500 mt-1 max-w-[19rem]">
+                Accédez au tableau de bord administrateur des cartes de visite et badges du personnel
+              </p>
+              <div className="w-12 h-px bg-neutral-200 mt-6" />
+            </div>
+
             <h1 className="text-2xl md:text-3xl font-bold mb-1 text-navy-deep">Connexion administrateur</h1>
             <p className="text-neutral-500 mb-8">Réservé au personnel autorisé</p>
 
