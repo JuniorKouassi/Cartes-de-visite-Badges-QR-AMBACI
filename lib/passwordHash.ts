@@ -1,4 +1,6 @@
-const ITERATIONS = 210_000;
+// Cloudflare Workers' Web Crypto implementation rejects PBKDF2 calls above
+// 100,000 iterations (throws NotSupportedError) — this is the max it allows.
+const ITERATIONS = 100_000;
 const HASH_BYTES = 32;
 
 function toHex(bytes: Uint8Array): string {
