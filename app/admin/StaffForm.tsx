@@ -25,6 +25,7 @@ type FormState = {
   email: string;
   valid_until: string;
   active: boolean;
+  business_card_enabled: boolean;
   matricule: string;
 };
 
@@ -40,6 +41,7 @@ function toFormState(staff?: Staff): FormState {
     email: staff?.email ?? "",
     valid_until: staff?.valid_until ?? "",
     active: staff ? Boolean(staff.active) : true,
+    business_card_enabled: staff ? Boolean(staff.business_card_enabled) : true,
     matricule: staff?.matricule ?? "",
   };
 }
@@ -118,6 +120,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     photo_key: staff?.photo_key ?? null,
     valid_until: form.valid_until || null,
     active: form.active ? 1 : 0,
+    business_card_enabled: form.business_card_enabled ? 1 : 0,
     created_at: staff?.created_at ?? "",
     updated_at: staff?.updated_at ?? "",
   };
@@ -146,6 +149,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
       email: form.email || null,
       valid_until: form.valid_until || null,
       active: form.active,
+      business_card_enabled: form.business_card_enabled,
       matricule: form.matricule || undefined,
     };
 
@@ -369,15 +373,31 @@ export function StaffForm({ staff }: { staff?: Staff }) {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-sm font-medium">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(e) => update("active", e.target.checked)}
-            className="h-4 w-4 rounded border-neutral-300 text-ci-green focus:ring-ci-green"
-          />
-          Badge actif
-        </label>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={form.active}
+              onChange={(e) => update("active", e.target.checked)}
+              className="h-4 w-4 rounded border-neutral-300 text-ci-green focus:ring-ci-green"
+            />
+            Badge actif
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={form.business_card_enabled}
+              onChange={(e) => update("business_card_enabled", e.target.checked)}
+              className="h-4 w-4 rounded border-neutral-300 text-ci-green focus:ring-ci-green"
+            />
+            Carte de visite activée
+          </label>
+        </div>
+        {!form.business_card_enabled && (
+          <p className="text-xs text-neutral-500 -mt-2">
+            La page publique de la carte de visite sera indisponible pour cette personne (le badge n&apos;est pas affecté).
+          </p>
+        )}
 
         <div>
           <label className="block text-sm font-medium mb-1">Photo du badge</label>

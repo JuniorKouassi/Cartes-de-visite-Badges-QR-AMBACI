@@ -46,13 +46,22 @@ export default async function AdminListPage({ searchParams }: { searchParams: Se
                 {s.function_title} · {s.matricule}
               </p>
             </div>
-            <span
-              className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                s.active ? "bg-ci-green-pale text-ci-green-dark" : "bg-red-100 text-red-700"
-              }`}
-            >
-              {s.active ? "Actif" : "Désactivé"}
-            </span>
+            <div className="flex shrink-0 gap-2">
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  s.active ? "bg-ci-green-pale text-ci-green-dark" : "bg-red-100 text-red-700"
+                }`}
+              >
+                {s.active ? "Badge actif" : "Badge désactivé"}
+              </span>
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  s.business_card_enabled ? "bg-ci-orange-pale text-ci-orange-dark" : "bg-neutral-100 text-neutral-500"
+                }`}
+              >
+                {s.business_card_enabled ? "Carte activée" : "Sans carte"}
+              </span>
+            </div>
           </Link>
         ))}
       </div>

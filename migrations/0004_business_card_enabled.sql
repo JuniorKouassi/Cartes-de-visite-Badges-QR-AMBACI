@@ -1,0 +1,1 @@
+ALTER TABLE staff ADD COLUMN business_card_enabled INTEGER NOT NULL DEFAULT 1;

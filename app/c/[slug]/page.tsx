@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function CardPage({ params }: { params: Params }) {
   const { slug } = await params;
   const staff = await getStaffBySlug(getDb(), slug);
-  if (!staff || !staff.active) notFound();
+  if (!staff || !staff.business_card_enabled) notFound();
 
   const qrSrc = `/qr/card/${staff.slug}.png`;
 

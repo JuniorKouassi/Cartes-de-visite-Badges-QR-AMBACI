@@ -6,7 +6,7 @@ import { buildVCard } from "@/lib/vcard";
 export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const staff = await getStaffBySlug(getDb(), slug);
-  if (!staff || !staff.active) notFound();
+  if (!staff || !staff.business_card_enabled) notFound();
 
   const cardUrl = new URL(`/c/${staff.slug}`, request.url).toString();
   const vcard = buildVCard(staff, cardUrl);

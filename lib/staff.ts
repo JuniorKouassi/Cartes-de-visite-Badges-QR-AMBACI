@@ -18,6 +18,7 @@ export interface Staff {
   photo_key: string | null;
   valid_until: string | null;
   active: number;
+  business_card_enabled: number;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,7 @@ export interface StaffInput {
   email?: string | null;
   valid_until?: string | null;
   active?: boolean;
+  business_card_enabled?: boolean;
   matricule?: string;
 }
 
@@ -98,8 +100,8 @@ export async function createStaff(db: D1Database, input: StaffInput): Promise<St
 
   const result = await db
     .prepare(
-      `INSERT INTO staff (slug, matricule, full_name, function_title, function_title_en, institution, institution_en, phone_office, phone_cell, email, valid_until, active, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `INSERT INTO staff (slug, matricule, full_name, function_title, function_title_en, institution, institution_en, phone_office, phone_cell, email, valid_until, active, business_card_enabled, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
        RETURNING *`
     )
     .bind(
@@ -114,7 +116,8 @@ export async function createStaff(db: D1Database, input: StaffInput): Promise<St
       input.phone_cell?.trim() || null,
       input.email?.trim() || null,
       input.valid_until?.trim() || null,
-      input.active === false ? 0 : 1
+      input.active === false ? 0 : 1,
+      input.business_card_enabled === false ? 0 : 1
     )
     .first<Staff>();
 
@@ -133,7 +136,7 @@ export async function updateStaff(db: D1Database, id: number, input: StaffInput)
     .prepare(
       `UPDATE staff SET
         slug = ?, matricule = ?, full_name = ?, function_title = ?, function_title_en = ?, institution = ?, institution_en = ?,
-        phone_office = ?, phone_cell = ?, email = ?, valid_until = ?, active = ?,
+        phone_office = ?, phone_cell = ?, email = ?, valid_until = ?, active = ?, business_card_enabled = ?,
         updated_at = datetime('now')
        WHERE id = ?
        RETURNING *`
@@ -151,6 +154,7 @@ export async function updateStaff(db: D1Database, id: number, input: StaffInput)
       input.email?.trim() || null,
       input.valid_until?.trim() || null,
       input.active === false ? 0 : 1,
+      input.business_card_enabled === false ? 0 : 1,
       id
     )
     .first<Staff>();
