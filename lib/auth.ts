@@ -1,10 +1,9 @@
 export const SESSION_COOKIE = "ambaci_admin_session";
-const SESSION_TTL_SECONDS = 30 * 60; // 30 minutes, refreshed on each authenticated request
+export const PENDING_2FA_COOKIE = "ambaci_pending_2fa";
 
-export interface AdminUser {
-  email: string;
-  password: string;
-}
+export const SESSION_TTL_SECONDS = 30 * 60; // 30 minutes, refreshed on each authenticated request
+export const PENDING_2FA_TTL_SECONDS = 5 * 60;
+export const RESET_TOKEN_TTL_SECONDS = 30 * 60;
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(
@@ -20,7 +19,7 @@ async function hmacHex(secret: string, message: string): Promise<string> {
     .join("");
 }
 
-function timingSafeEqual(a: string, b: string): boolean {
+export function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;
   for (let i = 0; i < a.length; i++) {
@@ -29,44 +28,53 @@ function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0;
 }
 
-export async function createSessionToken(secret: string): Promise<string> {
-  const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
-  const payload = String(expiresAt);
-  const signature = await hmacHex(secret, payload);
-  return `${payload}.${signature}`;
+/**
+ * Generic signed token: base64url(JSON payload) + "." + HMAC signature.
+ * Every payload carries its own `purpose` and `exp` so a token minted for
+ * one flow (e.g. pending-2FA) can never be replayed as another (e.g. a
+ * full session) even though they share the same signing secret.
+ */
+export async function createToken<T extends Record<string, unknown>>(
+  secret: string,
+  purpose: string,
+  data: T,
+  ttlSeconds: number
+): Promise<string> {
+  const payload = { ...data, purpose, exp: Date.now() + ttlSeconds * 1000 };
+  const encoded = btoa(JSON.stringify(payload));
+  const signature = await hmacHex(secret, encoded);
+  return `${encoded}.${signature}`;
 }
 
-export async function verifySessionToken(token: string | undefined, secret: string): Promise<boolean> {
-  if (!token) return false;
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return false;
+export async function verifyToken<T>(
+  token: string | undefined,
+  secret: string,
+  expectedPurpose: string
+): Promise<T | null> {
+  if (!token) return null;
+  const [encoded, signature] = token.split(".");
+  if (!encoded || !signature) return null;
 
-  const expected = await hmacHex(secret, payload);
-  if (!timingSafeEqual(signature, expected)) return false;
+  const expected = await hmacHex(secret, encoded);
+  if (!timingSafeEqual(signature, expected)) return null;
 
-  const expiresAt = Number(payload);
-  if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return false;
-
-  return true;
-}
-
-export function parseAdminUsers(json: string): AdminUser[] {
   try {
-    const parsed = JSON.parse(json);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (u): u is AdminUser => typeof u?.email === "string" && typeof u?.password === "string"
-    );
+    const payload = JSON.parse(atob(encoded)) as { purpose?: string; exp?: number } & T;
+    if (payload.purpose !== expectedPurpose) return null;
+    if (typeof payload.exp !== "number" || Date.now() > payload.exp) return null;
+    return payload;
   } catch {
-    return [];
+    return null;
   }
 }
 
-export function verifyCredentials(email: string, password: string, users: AdminUser[]): boolean {
-  const normalizedEmail = email.trim().toLowerCase();
-  return users.some(
-    (u) => timingSafeEqual(normalizedEmail, u.email.trim().toLowerCase()) && timingSafeEqual(password, u.password)
-  );
+export async function createSessionToken(secret: string, email: string): Promise<string> {
+  return createToken(secret, "session", { email }, SESSION_TTL_SECONDS);
 }
 
-export { SESSION_TTL_SECONDS };
+export async function verifySessionToken(
+  token: string | undefined,
+  secret: string
+): Promise<{ email: string } | null> {
+  return verifyToken<{ email: string }>(token, secret, "session");
+}

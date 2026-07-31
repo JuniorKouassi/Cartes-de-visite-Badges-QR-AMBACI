@@ -5,7 +5,9 @@
 VERIFY_MODE=minimal
 
 # Admin login (/login) — protects /admin and the /api/staff endpoints.
-# In production these are set as Cloudflare secrets (wrangler secret put), never committed.
-# ADMIN_USERS is a JSON array so multiple admins can log in; add more entries as needed.
-ADMIN_USERS=[{"email":"admin@example.com","password":"change-me"}]
+# Admin accounts live in D1 (admin_users table), not here. In production
+# these are set as Cloudflare secrets (wrangler secret put), never committed.
 SESSION_SECRET=any-long-random-string
+
+# Resend API key used to send password-reset emails (https://resend.com/api-keys).
+RESEND_API_KEY=

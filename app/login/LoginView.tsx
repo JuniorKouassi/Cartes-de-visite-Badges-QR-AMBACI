@@ -105,9 +105,16 @@ export function LoginView() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isHovered, setIsHovered] = useState(false);
-  const [showForgotInfo, setShowForgotInfo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState<"credentials" | "2fa">("credentials");
+  const [code, setCode] = useState("");
+
+  function goToNext() {
+    const next = searchParams.get("next") || "/admin";
+    router.push(next);
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,13 +127,38 @@ export function LoginView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      const data = (await res.json().catch(() => null)) as { error?: string; needs2fa?: boolean } | null;
+      if (!res.ok) {
+        throw new Error(data?.error ?? "Échec de la connexion");
+      }
+      if (data?.needs2fa) {
+        setStep("2fa");
+      } else {
+        goToNext();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleVerify2fa(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/auth/verify-2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(body?.error ?? "Échec de la connexion");
+        throw new Error(body?.error ?? "Code incorrect");
       }
-      const next = searchParams.get("next") || "/admin";
-      router.push(next);
-      router.refresh();
+      goToNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
@@ -192,95 +224,140 @@ export function LoginView() {
               <div className="w-12 h-px bg-neutral-200 mt-6" />
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold mb-1 text-navy-deep">Connexion administrateur</h1>
-            <p className="text-neutral-500 mb-8">Réservé au personnel autorisé</p>
+            {step === "credentials" ? (
+              <>
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 text-navy-deep">Connexion administrateur</h1>
+                <p className="text-neutral-500 mb-8">Réservé au personnel autorisé</p>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre.email@ambaci.at"
-                  required
-                  autoComplete="username"
-                />
-              </div>
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
+                      Email
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="votre.email@ambaci.at"
+                      required
+                      autoComplete="username"
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-                  Mot de passe
-                </label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={isPasswordVisible ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Votre mot de passe"
-                    required
-                    autoComplete="current-password"
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500 hover:text-neutral-700"
-                    onClick={() => setIsPasswordVisible((v) => !v)}
-                    aria-label={isPasswordVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
+                      Mot de passe
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={isPasswordVisible ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Votre mot de passe"
+                        required
+                        autoComplete="current-password"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500 hover:text-neutral-700"
+                        onClick={() => setIsPasswordVisible((v) => !v)}
+                        aria-label={isPasswordVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                      >
+                        {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {error && <p className="text-sm text-red-600">{error}</p>}
+
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onHoverStart={() => setIsHovered(true)}
+                    onHoverEnd={() => setIsHovered(false)}
+                    className="pt-2"
                   >
-                    {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                      className={cn(
+                        "w-full relative overflow-hidden bg-ci-green hover:bg-ci-green-dark text-white py-3 rounded-lg transition-colors duration-300",
+                        isHovered && "shadow-lg shadow-ci-green/30"
+                      )}
+                    >
+                      <span className="flex items-center justify-center">
+                        {submitting ? "Connexion…" : "Se connecter"}
+                        {!submitting && <ArrowRight className="ml-2 h-4 w-4" />}
+                      </span>
+                    </Button>
+                  </motion.div>
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
+                  <div className="text-center mt-6">
+                    <a href="/forgot-password" className="text-ci-green-dark hover:underline text-sm transition-colors">
+                      Mot de passe oublié ?
+                    </a>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 text-navy-deep">Vérification en deux étapes</h1>
+                <p className="text-neutral-500 mb-8">
+                  Entrez le code à 6 chiffres de votre application d&apos;authentification
+                </p>
 
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onHoverStart={() => setIsHovered(true)}
-                onHoverEnd={() => setIsHovered(false)}
-                className="pt-2"
-              >
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className={cn(
-                    "w-full relative overflow-hidden bg-ci-green hover:bg-ci-green-dark text-white py-3 rounded-lg transition-colors duration-300",
-                    isHovered && "shadow-lg shadow-ci-green/30"
-                  )}
-                >
-                  <span className="flex items-center justify-center">
-                    {submitting ? "Connexion…" : "Se connecter"}
-                    {!submitting && <ArrowRight className="ml-2 h-4 w-4" />}
-                  </span>
-                </Button>
-              </motion.div>
+                <form className="space-y-5" onSubmit={handleVerify2fa}>
+                  <div>
+                    <label htmlFor="code" className="block text-sm font-medium text-neutral-700 mb-1">
+                      Code
+                    </label>
+                    <Input
+                      id="code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="000000"
+                      required
+                      autoFocus
+                      className="text-center tracking-[0.5em] text-lg"
+                    />
+                  </div>
 
-              <div className="text-center mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotInfo((v) => !v)}
-                  className="text-ci-green-dark hover:underline text-sm transition-colors"
-                >
-                  Mot de passe oublié ?
-                </button>
-                {showForgotInfo && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="mt-3 text-xs text-neutral-500 bg-neutral-50 rounded-lg p-3 text-left"
+                  {error && <p className="text-sm text-red-600">{error}</p>}
+
+                  <Button
+                    type="submit"
+                    disabled={submitting || code.length !== 6}
+                    className="w-full bg-ci-green hover:bg-ci-green-dark text-white py-3 rounded-lg transition-colors duration-300"
                   >
-                    Il n&apos;y a pas de réinitialisation automatique par e-mail. Contactez la personne qui gère le
-                    déploiement technique du site (accès au compte Cloudflare) pour définir un nouveau mot de passe.
-                  </motion.p>
-                )}
-              </div>
-            </form>
+                    <span className="flex items-center justify-center">
+                      {submitting ? "Vérification…" : "Vérifier"}
+                      {!submitting && <ArrowRight className="ml-2 h-4 w-4" />}
+                    </span>
+                  </Button>
+
+                  <div className="text-center mt-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep("credentials");
+                        setCode("");
+                        setError(null);
+                      }}
+                      className="text-ci-green-dark hover:underline text-sm transition-colors"
+                    >
+                      ← Retour
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </motion.div>
         </div>
         </div>

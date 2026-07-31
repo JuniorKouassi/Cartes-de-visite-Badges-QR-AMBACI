@@ -11,13 +11,13 @@ export const config = {
 export default async function middleware(request: NextRequest) {
   const { env } = getCloudflareContext();
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const authenticated = await verifySessionToken(token, env.SESSION_SECRET);
+  const session = await verifySessionToken(token, env.SESSION_SECRET);
 
-  if (authenticated) {
+  if (session) {
     // Sliding-window idle timeout: renew the cookie's expiry on each
     // authenticated request, so it only expires after 30 min of inactivity.
     const res = NextResponse.next();
-    const freshToken = await createSessionToken(env.SESSION_SECRET);
+    const freshToken = await createSessionToken(env.SESSION_SECRET, session.email);
     res.cookies.set(SESSION_COOKIE, freshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

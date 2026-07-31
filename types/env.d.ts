@@ -1,5 +1,5 @@
 interface CloudflareEnv {
-  // JSON array of { email, password }, e.g. [{"email":"a@x.com","password":"..."}]
-  ADMIN_USERS: string;
   SESSION_SECRET: string;
+  // Resend API key used to send password-reset emails.
+  RESEND_API_KEY: string;
 }

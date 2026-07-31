@@ -12,3 +12,15 @@ export async function generateQrPng(data: string): Promise<Buffer> {
     },
   });
 }
+
+export async function generateQrDataUrl(data: string): Promise<string> {
+  return QRCode.toDataURL(data, {
+    errorCorrectionLevel: "M",
+    margin: 2,
+    width: 320,
+    color: {
+      dark: "#0A1F10",
+      light: "#FFFFFF",
+    },
+  });
+}
