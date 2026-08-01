@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getCurrentAdminUser } from "@/lib/authSession";
-import { createAdminUser, deleteAdminUser, getAdminUserByEmail, listAdminUsers } from "@/lib/adminUsers";
+import { createAdminUser, getAdminUserByEmail, listAdminUsers } from "@/lib/adminUsers";
 import { hashPassword } from "@/lib/passwordHash";
 import { createToken, INVITE_TOKEN_TTL_SECONDS } from "@/lib/auth";
 import { sendAdminInviteEmail } from "@/lib/email";
@@ -47,14 +47,16 @@ export async function POST(request: Request) {
   const token = await createToken(env.SESSION_SECRET, "password-reset", { userId: newAdmin.id }, INVITE_TOKEN_TTL_SECONDS);
   const setPasswordUrl = new URL(`/reset-password?token=${encodeURIComponent(token)}`, request.url).toString();
 
+  let emailSent = true;
   try {
     await sendAdminInviteEmail(env, email, setPasswordUrl);
   } catch (err) {
     console.error("Échec de l'envoi de l'e-mail d'invitation admin", err);
-    // Roll back so the admin can simply retry instead of hitting a stuck 409.
-    await deleteAdminUser(env.DB, newAdmin.id);
-    return NextResponse.json({ error: "L'e-mail d'invitation n'a pas pu être envoyé" }, { status: 502 });
+    emailSent = false;
   }
 
-  return NextResponse.json({ ok: true });
+  // The account is created either way — if the email couldn't be sent (e.g. no
+  // verified Resend domain yet), the inviting admin can share this link manually
+  // instead of being stuck.
+  return NextResponse.json({ ok: true, emailSent, setPasswordUrl: emailSent ? undefined : setPasswordUrl });
 }

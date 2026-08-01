@@ -121,8 +121,9 @@ l'admin qui invite, ne le connaît. Cela nécessite que `RESEND_API_KEY` soit co
 « Mot de passe oublié » ci-dessous) — **et tant qu'aucun domaine n'est vérifié sur Resend, l'expéditeur
 par défaut `onboarding@resend.dev` ne peut envoyer qu'à l'adresse e-mail du propriétaire du compte
 Resend**, pas à une adresse arbitraire ; vérifiez un domaine sur Resend pour inviter de vrais
-collègues. Un admin ne peut pas se retirer lui-même, et le dernier admin restant ne peut pas être
-retiré.
+collègues. En attendant, si l'e-mail ne part pas, le compte est quand même créé et l'interface
+affiche directement le lien à copier-coller pour le transmettre soi-même (WhatsApp, Signal, etc.).
+Un admin ne peut pas se retirer lui-même, et le dernier admin restant ne peut pas être retiré.
 
 **Authentification à deux facteurs (TOTP)** : chaque admin peut l'activer lui-même sur
 `/admin/security` — un QR code est généré pour une application d'authentification (Google

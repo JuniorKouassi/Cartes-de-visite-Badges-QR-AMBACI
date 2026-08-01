@@ -11,6 +11,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
   const [removingId, setRemovingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [manualLink, setManualLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function loadAdmins() {
     const res = await fetch("/api/auth/admins");
@@ -27,6 +29,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
     setInviting(true);
     setError(null);
     setMessage(null);
+    setManualLink(null);
+    setCopied(false);
 
     try {
       const res = await fetch("/api/auth/admins", {
@@ -34,9 +38,16 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      const data = (await res.json().catch(() => null)) as
+        | { error?: string; emailSent?: boolean; setPasswordUrl?: string }
+        | null;
       if (!res.ok) throw new Error(data?.error ?? "Échec de l'invitation");
-      setMessage(`Invitation envoyée à ${email}.`);
+
+      if (data?.emailSent) {
+        setMessage(`Invitation envoyée à ${email}.`);
+      } else if (data?.setPasswordUrl) {
+        setManualLink(data.setPasswordUrl);
+      }
       setEmail("");
       await loadAdmins();
     } catch (err) {
@@ -44,6 +55,12 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
     } finally {
       setInviting(false);
     }
+  }
+
+  async function copyManualLink() {
+    if (!manualLink) return;
+    await navigator.clipboard.writeText(manualLink);
+    setCopied(true);
   }
 
   async function handleRemove(admin: Admin) {
@@ -93,6 +110,30 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
 
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
         {message && <p className="text-sm text-ci-green-dark mt-3">{message}</p>}
+
+        {manualLink && (
+          <div className="mt-4 rounded-lg bg-ci-orange-pale p-4 space-y-2">
+            <p className="text-sm text-neutral-700">
+              Le compte a été créé, mais l&apos;e-mail n&apos;a pas pu être envoyé (aucun domaine vérifié sur
+              Resend pour le moment). Partagez ce lien vous-même avec la personne — il expire dans 24h :
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                readOnly
+                value={manualLink}
+                onFocus={(e) => e.target.select()}
+                className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-mono"
+              />
+              <button
+                type="button"
+                onClick={copyManualLink}
+                className="shrink-0 rounded-full border border-ci-orange-dark text-ci-orange-dark px-4 py-2 text-sm font-medium hover:bg-white transition-colors"
+              >
+                {copied ? "Copié !" : "Copier"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm ring-1 ring-black/5 divide-y divide-neutral-100">
