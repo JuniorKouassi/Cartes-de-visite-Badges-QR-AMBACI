@@ -16,6 +16,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="bg-gradient-to-b from-ci-green to-ci-green-dark px-6 py-2 flex items-center justify-between">
         <span className="text-white/80 text-xs">Administration — AMBACI Vienne</span>
         <div className="flex items-center gap-4">
+          <Link href="/admin/admins" className="text-white/80 hover:text-white text-sm hover:underline">
+            Administrateurs
+          </Link>
           <Link href="/admin/security" className="text-white/80 hover:text-white text-sm hover:underline">
             Sécurité
           </Link>

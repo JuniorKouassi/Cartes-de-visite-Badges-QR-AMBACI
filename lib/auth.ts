@@ -4,6 +4,7 @@ export const PENDING_2FA_COOKIE = "ambaci_pending_2fa";
 export const SESSION_TTL_SECONDS = 30 * 60; // 30 minutes, refreshed on each authenticated request
 export const PENDING_2FA_TTL_SECONDS = 5 * 60;
 export const RESET_TOKEN_TTL_SECONDS = 30 * 60;
+export const INVITE_TOKEN_TTL_SECONDS = 24 * 60 * 60;
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(

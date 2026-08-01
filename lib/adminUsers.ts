@@ -19,6 +19,29 @@ export async function getAdminUserById(db: D1Database, id: number): Promise<Admi
   return db.prepare("SELECT * FROM admin_users WHERE id = ?").bind(id).first<AdminUser>();
 }
 
+export interface AdminUserSummary {
+  id: number;
+  email: string;
+  totp_enabled: number;
+  created_at: string;
+}
+
+export async function listAdminUsers(db: D1Database): Promise<AdminUserSummary[]> {
+  const { results } = await db
+    .prepare("SELECT id, email, totp_enabled, created_at FROM admin_users ORDER BY email")
+    .all<AdminUserSummary>();
+  return results;
+}
+
+export async function countAdminUsers(db: D1Database): Promise<number> {
+  const row = await db.prepare("SELECT COUNT(*) as count FROM admin_users").first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
+export async function deleteAdminUser(db: D1Database, id: number): Promise<void> {
+  await db.prepare("DELETE FROM admin_users WHERE id = ?").bind(id).run();
+}
+
 export async function createAdminUser(db: D1Database, email: string, passwordHash: string): Promise<AdminUser> {
   const result = await db
     .prepare(

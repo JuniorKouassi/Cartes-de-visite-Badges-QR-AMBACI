@@ -94,21 +94,35 @@ D1 `admin_users` (`migrations/0003_admin_users.sql`) — email, mot de passe hac
 `lib/passwordHash.ts`), et un secret TOTP optionnel. La session expire après **30 minutes
 d'inactivité** (elle se renouvelle automatiquement à chaque requête authentifiée).
 
-**Créer le premier compte admin** (aucune UI d'inscription — se fait via `wrangler d1 execute`) :
+**Créer le tout premier compte admin** (aucun admin existant pour l'inviter — se fait une seule fois
+via `wrangler d1 execute`) :
 
 ```bash
 node -e "
 const crypto = require('crypto');
 const password = 'mot-de-passe-a-choisir';
 const salt = crypto.randomBytes(16);
-const hash = crypto.pbkdf2Sync(password, salt, 210000, 32, 'sha256');
-console.log('pbkdf2\$210000\$' + salt.toString('hex') + '\$' + hash.toString('hex'));
+const hash = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
+console.log('pbkdf2\$100000\$' + salt.toString('hex') + '\$' + hash.toString('hex'));
 "
 # puis, avec le hash affiché :
-npx wrangler d1 execute ambaci-cartes --remote --command "INSERT INTO admin_users (email, password_hash) VALUES ('admin@example.com', 'pbkdf2\$210000\$...')"
+npx wrangler d1 execute ambaci-cartes --remote --command "INSERT INTO admin_users (email, password_hash) VALUES ('admin@example.com', 'pbkdf2\$100000\$...')"
 ```
 
-(`--local` pour la base de développement.)
+(`--local` pour la base de développement.) **Important** : le nombre d'itérations doit rester
+**100 000**, pas plus — l'implémentation Web Crypto de Cloudflare Workers rejette PBKDF2 au-delà de
+100 000 itérations (`NotSupportedError`), contrairement à Node (`next dev`) où un nombre plus élevé
+semble fonctionner en local mais échoue une fois déployé.
+
+**Ajouter d'autres administrateurs** : une fois au moins un admin connecté, plus besoin de la
+commande ci-dessus — direction `/admin/admins` pour inviter quelqu'un par e-mail. La personne
+invitée reçoit un lien (valable 24h) pour choisir elle-même son mot de passe ; personne, pas même
+l'admin qui invite, ne le connaît. Cela nécessite que `RESEND_API_KEY` soit configuré (voir
+« Mot de passe oublié » ci-dessous) — **et tant qu'aucun domaine n'est vérifié sur Resend, l'expéditeur
+par défaut `onboarding@resend.dev` ne peut envoyer qu'à l'adresse e-mail du propriétaire du compte
+Resend**, pas à une adresse arbitraire ; vérifiez un domaine sur Resend pour inviter de vrais
+collègues. Un admin ne peut pas se retirer lui-même, et le dernier admin restant ne peut pas être
+retiré.
 
 **Authentification à deux facteurs (TOTP)** : chaque admin peut l'activer lui-même sur
 `/admin/security` — un QR code est généré pour une application d'authentification (Google
@@ -140,10 +154,11 @@ la clé n'est pas configurée, la demande est acceptée silencieusement mais l'e
 - `app/qr/card/[filename]` et `app/qr/verify/[filename]` — QR PNG générés à la volée.
 - `app/admin` — liste, création, édition, upload photo, aperçu live, export haute qualité (PNG/JPEG/PDF), protégé par `/login`.
 - `app/admin/security` — activation/désactivation de la 2FA (TOTP) pour le compte connecté.
+- `app/admin/admins` — inviter/retirer des administrateurs.
 - `app/login` — connexion admin (email + mot de passe, puis code 2FA si activée).
-- `app/forgot-password` / `app/reset-password` — demande et application d'une réinitialisation de mot de passe par e-mail.
+- `app/forgot-password` / `app/reset-password` — demande et application d'une réinitialisation de mot de passe par e-mail (aussi utilisé pour la définition du mot de passe lors d'une invitation admin).
 - `app/api/staff` — endpoints CRUD ; `app/api/staff/[id]/photo` — upload R2 ; `app/api/photo/[...key]` — service des photos.
-- `app/api/auth` — login/logout/verify-2fa, `forgot-password`/`reset-password`, `totp/setup`|`confirm`|`disable`.
+- `app/api/auth` — login/logout/verify-2fa, `forgot-password`/`reset-password`, `totp/setup`|`confirm`|`disable`, `admins`/`admins/[id]` (inviter/retirer).
 - `app/api/translate` — traduction FR→EN à la volée (Cloudflare Workers AI) pour la carte de visite publique.
 - `middleware.ts` — protège `/admin/*` et `/api/staff/*` (runtime Edge, requis par OpenNext).
 - `lib/` — accès D1 (`db.ts`, `staff.ts`, `adminUsers.ts`), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`).
