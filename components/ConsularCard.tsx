@@ -27,7 +27,15 @@ function Field({ label, value, wide = false }: { label: string; value: string; w
   );
 }
 
-export function ConsularCardFront({ holder, photoSrc }: { holder: ConsularHolder; photoSrc: string | null }) {
+export function ConsularCardFront({
+  holder,
+  photoSrc,
+  qrSrc,
+}: {
+  holder: ConsularHolder;
+  photoSrc: string | null;
+  qrSrc: string | null;
+}) {
   const validity =
     holder.card_valid_from || holder.card_valid_until
       ? `${formatDate(holder.card_valid_from)} au ${formatDate(holder.card_valid_until)}`
@@ -197,14 +205,27 @@ export function ConsularCardFront({ holder, photoSrc }: { holder: ConsularHolder
 
       <div className="absolute flex flex-col items-center" style={{ right: "2.2mm", bottom: "1.69mm", gap: "0.42mm" }}>
         <div className="bg-white rounded-[0.85mm] shadow" style={{ border: "0.08mm solid #e2d8c4", padding: "0.59mm", lineHeight: 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/consular-portal-qr.jpg" alt="QR code du portail AMBACI Vienne" style={{ width: "9.48mm", height: "9.48mm", display: "block" }} />
+          {qrSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={qrSrc}
+              alt={`QR code de vérification de la carte consulaire ${holder.card_number}`}
+              style={{ width: "9.48mm", height: "9.48mm", display: "block" }}
+            />
+          ) : (
+            <div
+              className="flex items-center justify-center bg-neutral-100 text-neutral-400"
+              style={{ width: "9.48mm", height: "9.48mm", fontSize: "1.2mm" }}
+            >
+              QR
+            </div>
+          )}
         </div>
         <span
           className={`${archivoNarrow.className} font-semibold uppercase`}
           style={{ fontSize: "0.72mm", letterSpacing: "0.12em", color: "#7a7363" }}
         >
-          Scannez le QR code
+          Scannez pour vérifier
         </span>
       </div>
 

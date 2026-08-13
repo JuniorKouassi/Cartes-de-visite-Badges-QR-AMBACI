@@ -185,7 +185,8 @@ constante `AMBASSADOR_NAME` dans `components/ConsularCard.tsx`, pas une donnée 
 
 - `app/c/[slug]` — carte de visite publique (recto/verso, vCard, QR).
 - `app/verify/[matricule]` — page de vérification de badge (mode minimal par défaut, cf. `VERIFY_MODE`).
-- `app/qr/card/[filename]` et `app/qr/verify/[filename]` — QR PNG générés à la volée.
+- `app/verify-consulaire/[cardNumber]` — page de vérification de carte consulaire (statut, photo, validité, n° de passeport) ; toujours en détail complet, pas de mode minimal.
+- `app/qr/card/[filename]`, `app/qr/verify/[filename]` et `app/qr/consulaire/[filename]` — QR PNG générés à la volée, pointant respectivement vers `/c/[slug]`, `/verify/[matricule]` et `/verify-consulaire/[cardNumber]`.
 - `app/admin` — tableau de bord des départements (tuiles Protocole / Service consulaire / Paierie), protégé par `/login`.
 - `app/admin/protocole` — module Protocole : liste, création, édition, upload photo, aperçu live, export haute qualité (PNG/JPEG/PDF). Nécessite le département `protocole`.
 - `app/admin/consulaire` — sous-tableau de bord du Service consulaire (tuiles Cartes consulaires & Passeports / Visas).

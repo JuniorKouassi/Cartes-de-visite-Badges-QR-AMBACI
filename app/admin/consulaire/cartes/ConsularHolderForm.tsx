@@ -130,6 +130,7 @@ export function ConsularHolderForm({ holder }: { holder?: ConsularHolder }) {
   };
 
   const photoSrc = pendingPhotoUrl ?? (holder?.photo_key ? `/api/photo/${holder.photo_key}` : null);
+  const qrSrc = holder ? `/qr/consulaire/${holder.card_number}.png` : null;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -304,6 +305,8 @@ export function ConsularHolderForm({ holder }: { holder?: ConsularHolder }) {
             <label className="block text-sm font-medium mb-1">Date de naissance</label>
             <input
               type="date"
+              min="1900-01-01"
+              max={new Date().toISOString().slice(0, 10)}
               value={form.date_of_birth}
               onChange={(e) => update("date_of_birth", e.target.value)}
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ci-green"
@@ -438,6 +441,8 @@ export function ConsularHolderForm({ holder }: { holder?: ConsularHolder }) {
               <label className="block text-sm font-medium mb-1">Date de délivrance</label>
               <input
                 type="date"
+                min="1900-01-01"
+                max="2099-12-31"
                 value={form.passport_issued_at}
                 onChange={(e) => update("passport_issued_at", e.target.value)}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ci-green"
@@ -525,7 +530,7 @@ export function ConsularHolderForm({ holder }: { holder?: ConsularHolder }) {
             className="block p-0 m-0 border-0 bg-transparent cursor-zoom-in transition-transform hover:scale-[1.02] [transform:translateZ(0)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ci-green rounded-[2.5mm]"
             aria-label="Agrandir le recto de la carte"
           >
-            <ConsularCardFront holder={previewHolder} photoSrc={photoSrc} />
+            <ConsularCardFront holder={previewHolder} photoSrc={photoSrc} qrSrc={qrSrc} />
           </button>
         </div>
         <div ref={backRef}>
@@ -556,7 +561,7 @@ export function ConsularHolderForm({ holder }: { holder?: ConsularHolder }) {
               className="sm:[zoom:2.4]"
               style={typeof window !== "undefined" && window.innerWidth < 640 ? { zoom: mobileZoomScale } : undefined}
             >
-              {zoomed === "front" && <ConsularCardFront holder={previewHolder} photoSrc={photoSrc} />}
+              {zoomed === "front" && <ConsularCardFront holder={previewHolder} photoSrc={photoSrc} qrSrc={qrSrc} />}
               {zoomed === "back" && <ConsularCardBack holder={previewHolder} />}
             </div>
           </div>
