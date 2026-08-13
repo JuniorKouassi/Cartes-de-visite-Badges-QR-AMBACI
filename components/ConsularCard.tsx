@@ -13,14 +13,17 @@ function formatDate(value: string | null) {
 
 function Field({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
   return (
-    <div className={`flex flex-col gap-[0.25mm] ${wide ? "col-span-2" : ""}`}>
+    <div className={`flex flex-col items-start text-left gap-[0.25mm] w-full ${wide ? "col-span-2" : ""}`}>
       <span
-        className={`${archivoNarrow.className} font-semibold uppercase text-[#0E8F47]`}
+        className={`${archivoNarrow.className} font-semibold uppercase text-[#0E8F47] text-left`}
         style={{ fontSize: "0.89mm", letterSpacing: "0.13em" }}
       >
         {label}
       </span>
-      <span className={`${dmSans.className} font-semibold text-[#1d1a16] leading-tight truncate`} style={{ fontSize: "1.48mm" }}>
+      <span
+        className={`${dmSans.className} font-semibold text-[#1d1a16] leading-tight truncate text-left w-full`}
+        style={{ fontSize: "1.48mm" }}
+      >
         {value}
       </span>
     </div>
