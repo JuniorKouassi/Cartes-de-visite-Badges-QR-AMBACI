@@ -20,7 +20,7 @@ const TILES: { department: Department; title: string; description: string; href:
     title: "Service consulaire",
     description: "Passeports, visas et cartes consulaires des ressortissants ivoiriens.",
     href: "/admin/consulaire",
-    ready: false,
+    ready: true,
   },
   {
     department: "paierie",

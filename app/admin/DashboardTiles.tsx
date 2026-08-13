@@ -79,13 +79,13 @@ export function DashboardTiles({ tiles, departments }: { tiles: Tile[]; departme
               key={tile.department}
               variants={tileVariants}
               title="Accès non autorisé"
-              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-neutral-100 ring-1 ring-black/5 flex flex-col items-center justify-center text-center px-6 opacity-70 grayscale"
+              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-neutral-100 ring-1 ring-black/5 flex flex-col items-center text-center px-6 pt-9 opacity-70 grayscale"
             >
-              <div className="w-16 h-16 rounded-2xl bg-neutral-200 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-neutral-200 flex items-center justify-center mb-5 shrink-0">
                 <Lock className="w-7 h-7 text-neutral-400" />
               </div>
-              <h2 className="text-xl font-bold text-neutral-500">{tile.title}</h2>
-              <p className="text-sm text-neutral-400 mt-2">{tile.description}</p>
+              <h2 className="text-xl font-bold text-neutral-500 leading-tight">{tile.title}</h2>
+              <p className="text-sm text-neutral-400 mt-3">{tile.description}</p>
               <p className="text-xs text-neutral-400 mt-4 font-medium uppercase tracking-wide">Accès non autorisé</p>
             </motion.div>
           );
@@ -99,15 +99,15 @@ export function DashboardTiles({ tiles, departments }: { tiles: Tile[]; departme
             />
             <Link
               href={tile.href}
-              className={`group relative flex flex-col items-center justify-center text-center w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-white px-6 shadow-md ring-1 ring-black/5 transition-shadow duration-300 hover:shadow-2xl ${accent.ring}`}
+              className={`group relative flex flex-col items-center text-center w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-white px-6 pt-9 shadow-md ring-1 ring-black/5 transition-shadow duration-300 hover:shadow-2xl ${accent.ring}`}
             >
               <motion.div
                 variants={iconVariants}
-                className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-5`}
+                className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-5 shrink-0`}
               >
                 <Icon className={`w-8 h-8 ${accent.iconText}`} />
               </motion.div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-navy-deep">{tile.title}</h2>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-navy-deep leading-tight">{tile.title}</h2>
               <p className="text-sm text-neutral-500 mt-3 leading-snug">{tile.description}</p>
               {!tile.ready && (
                 <p className="text-xs text-ci-orange-dark mt-4 font-semibold uppercase tracking-wide">
