@@ -5,7 +5,10 @@ permanente de Côte d'Ivoire à Vienne, déployée sur **Cloudflare Workers** vi
 Conçue comme une application à **plusieurs départements**, chacun avec son propre accès :
 
 - **Protocole** (opérationnel) — cartes de visite numériques et badges QR du personnel (~100 fiches).
-- **Service consulaire** (à venir) — passeports, visas, cartes consulaires des ressortissants ivoiriens.
+- **Service consulaire** — deux sous-modules :
+  - **Cartes consulaires & Passeports** (opérationnel) — fiches des ressortissants ivoiriens de la
+    circonscription, avec génération de leur carte consulaire (recto/verso).
+  - **Visas** (à venir).
 - **Paierie** (à venir).
 
 Voir « Départements et droits d'accès » ci-dessous pour le fonctionnement des permissions, et
@@ -161,9 +164,13 @@ département.
   département sélectionné.
 - Les deux admins fondateurs (créés avant ce système) ont été affectés aux trois départements par
   la migration elle-même — à ajuster manuellement si besoin une fois Consulaire/Paierie réels.
-- Consulaire et Paierie n'ont pour l'instant qu'une page « en construction » — le contrôle d'accès
-  est déjà en place pour que les vraies fonctionnalités s'y branchent directement quand elles seront
-  développées.
+- Paierie, et le sous-module Visas du Service consulaire, n'ont pour l'instant qu'une page
+  « en construction » — le contrôle d'accès est déjà en place pour que les vraies fonctionnalités
+  s'y branchent directement quand elles seront développées.
+
+**Carte consulaire** : le nom et la signature affichés sur la carte (« L'Ambassadeur ») sont une
+constante `AMBASSADOR_NAME` dans `components/ConsularCard.tsx`, pas une donnée par fiche — à mettre
+à jour dans le code si l'ambassadeur change.
 
 ## À préparer côté utilisateur
 
@@ -181,15 +188,18 @@ département.
 - `app/qr/card/[filename]` et `app/qr/verify/[filename]` — QR PNG générés à la volée.
 - `app/admin` — tableau de bord des départements (tuiles Protocole / Service consulaire / Paierie), protégé par `/login`.
 - `app/admin/protocole` — module Protocole : liste, création, édition, upload photo, aperçu live, export haute qualité (PNG/JPEG/PDF). Nécessite le département `protocole`.
-- `app/admin/consulaire`, `app/admin/paierie` — pages « en construction », déjà protégées par département en attendant les vraies fonctionnalités.
+- `app/admin/consulaire` — sous-tableau de bord du Service consulaire (tuiles Cartes consulaires & Passeports / Visas).
+- `app/admin/consulaire/cartes` — module Cartes consulaires & Passeports : liste, création, édition, upload photo, aperçu live recto/verso, export PNG/JPEG/PDF. Nécessite le département `consulaire`.
+- `app/admin/paierie`, `app/admin/consulaire` (sous-module Visas) — pages « en construction », déjà protégées par département en attendant les vraies fonctionnalités.
 - `app/admin/security` — activation/désactivation de la 2FA (TOTP) pour le compte connecté.
 - `app/admin/admins` — inviter/retirer des administrateurs, affecter leurs départements.
 - `app/login` — connexion admin (email + mot de passe, puis code 2FA si activée).
 - `app/forgot-password` / `app/reset-password` — demande et application d'une réinitialisation de mot de passe par e-mail (aussi utilisé pour la définition du mot de passe lors d'une invitation admin).
 - `app/api/staff` — endpoints CRUD (protégés par le département `protocole`) ; `app/api/staff/[id]/photo` — upload R2 ; `app/api/photo/[...key]` — service des photos.
+- `app/api/consular` — endpoints CRUD des fiches consulaires (protégés par le département `consulaire`) ; `app/api/consular/[id]/photo` — upload R2 (partage `app/api/photo/[...key]` pour la lecture).
 - `app/api/auth` — login/logout/verify-2fa, `forgot-password`/`reset-password`, `totp/setup`|`confirm`|`disable`, `admins`/`admins/[id]` (inviter/retirer/modifier les départements).
 - `app/api/translate` — traduction FR→EN à la volée (Cloudflare Workers AI) pour la carte de visite publique.
-- `middleware.ts` — vérifie la session sur `/admin/*` et `/api/staff/*` (runtime Edge, requis par OpenNext) ; le contrôle par département est fait séparément dans chaque page/route concernée.
-- `lib/` — accès D1 (`db.ts`, `staff.ts`, `adminUsers.ts` — comptes admin + départements), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`).
-- `components/` — `BusinessCard.tsx` (recto/verso, 85,6×54 mm), `Badge.tsx` (portrait CR80, 54×85,6 mm).
-- `migrations/` — schéma D1 : `staff` (0001), colonnes EN (0002), `admin_users` (0003), `business_card_enabled` (0004), `admin_departments` (0005).
+- `middleware.ts` — vérifie la session sur `/admin/*`, `/api/staff/*` et `/api/consular/*` (runtime Edge, requis par OpenNext) ; le contrôle par département est fait séparément dans chaque page/route concernée.
+- `lib/` — accès D1 (`db.ts`, `staff.ts`, `consularHolders.ts`, `adminUsers.ts` — comptes admin + départements), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`), fonts (`fonts.ts`).
+- `components/` — `BusinessCard.tsx` (recto/verso, 85,6×54 mm), `Badge.tsx` (portrait CR80, 54×85,6 mm), `ConsularCard.tsx` (carte consulaire recto/verso, 85,6×54 mm).
+- `migrations/` — schéma D1 : `staff` (0001), colonnes EN (0002), `admin_users` (0003), `business_card_enabled` (0004), `admin_departments` (0005), `consular_holders` (0006).

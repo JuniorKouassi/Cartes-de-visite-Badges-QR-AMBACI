@@ -5,7 +5,7 @@ import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS, verifySessionT
 export const runtime = "experimental-edge";
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/staff/:path*"],
+  matcher: ["/admin/:path*", "/api/staff/:path*", "/api/consular/:path*"],
 };
 
 export default async function middleware(request: NextRequest) {
@@ -28,7 +28,7 @@ export default async function middleware(request: NextRequest) {
     return res;
   }
 
-  if (request.nextUrl.pathname.startsWith("/api/staff")) {
+  if (request.nextUrl.pathname.startsWith("/api/staff") || request.nextUrl.pathname.startsWith("/api/consular")) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
