@@ -167,7 +167,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
 
       if (!staff) {
         if (pendingPhoto) await uploadPhoto(saved.id, pendingPhoto);
-        router.push(`/admin/${saved.id}/edit`);
+        router.push(`/admin/protocole/${saved.id}/edit`);
       } else {
         router.refresh();
       }
@@ -204,7 +204,7 @@ export function StaffForm({ staff }: { staff?: Staff }) {
     try {
       const res = await fetch(`/api/staff/${staff.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Échec de la suppression");
-      router.push("/admin");
+      router.push("/admin/protocole");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setDeleting(false);

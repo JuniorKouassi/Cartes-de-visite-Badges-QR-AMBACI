@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getCurrentAdminUser } from "@/lib/authSession";
-import { createAdminUser, getAdminUserByEmail, listAdminUsers } from "@/lib/adminUsers";
+import { createAdminUser, getAdminUserByEmail, isDepartment, listAdminUsers, setAdminDepartments } from "@/lib/adminUsers";
 import { hashPassword } from "@/lib/passwordHash";
 import { createToken, INVITE_TOKEN_TTL_SECONDS } from "@/lib/auth";
 import { sendAdminInviteEmail } from "@/lib/email";
@@ -25,10 +25,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as { email?: string } | null;
+  const body = (await request.json().catch(() => null)) as { email?: string; departments?: string[] } | null;
   const email = body?.email?.trim().toLowerCase();
   if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Adresse e-mail invalide" }, { status: 400 });
+  }
+
+  const departments = (body?.departments ?? []).filter(isDepartment);
+  if (departments.length === 0) {
+    return NextResponse.json({ error: "Sélectionnez au moins un département" }, { status: 400 });
   }
 
   const { env } = getCloudflareContext();
@@ -43,6 +48,7 @@ export async function POST(request: Request) {
   const placeholder = crypto.randomUUID() + crypto.randomUUID();
   const passwordHash = await hashPassword(placeholder);
   const newAdmin = await createAdminUser(env.DB, email, passwordHash);
+  await setAdminDepartments(env.DB, newAdmin.id, departments);
 
   const token = await createToken(env.SESSION_SECRET, "password-reset", { userId: newAdmin.id }, INVITE_TOKEN_TTL_SECONDS);
   const setPasswordUrl = new URL(`/reset-password?token=${encodeURIComponent(token)}`, request.url).toString();

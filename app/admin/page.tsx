@@ -1,69 +1,77 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
-import { listStaff } from "@/lib/staff";
+import { getAdminDepartments, type Department } from "@/lib/adminUsers";
+import { getCurrentAdminUser } from "@/lib/authSession";
 
 export const metadata = { title: "Admin — AMBACI Vienne" };
+export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ q?: string }>;
+const TILES: { department: Department; title: string; description: string; href: string; ready: boolean }[] = [
+  {
+    department: "protocole",
+    title: "Protocole",
+    description: "Cartes de visite et badges QR du personnel de l'ambassade.",
+    href: "/admin/protocole",
+    ready: true,
+  },
+  {
+    department: "consulaire",
+    title: "Service consulaire",
+    description: "Passeports, visas et cartes consulaires des ressortissants ivoiriens.",
+    href: "/admin/consulaire",
+    ready: false,
+  },
+  {
+    department: "paierie",
+    title: "Paierie",
+    description: "Module à venir.",
+    href: "/admin/paierie",
+    ready: false,
+  },
+];
 
-export default async function AdminListPage({ searchParams }: { searchParams: SearchParams }) {
-  const { q } = await searchParams;
-  const staff = await listStaff(getDb(), q);
+export default async function AdminHomePage() {
+  const user = await getCurrentAdminUser();
+  if (!user) redirect("/login");
+
+  const departments = await getAdminDepartments(getDb(), user.id);
 
   return (
     <main className="min-h-screen p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
-        <h1 className="font-serif text-2xl font-bold">Personnel — AMBACI Vienne</h1>
-        <Link
-          href="/admin/new"
-          className="rounded-full bg-ci-green px-5 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
-        >
-          + Nouvelle fiche
-        </Link>
-      </div>
+      <h1 className="font-serif text-2xl font-bold mb-1">AMBACI Vienne — Administration</h1>
+      <p className="text-neutral-500 mb-8">Choisissez un service.</p>
 
-      <form className="mb-6">
-        <input
-          type="search"
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder="Rechercher un nom, une fonction, un matricule…"
-          className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-ci-green"
-        />
-      </form>
+      <div className="grid sm:grid-cols-3 gap-5">
+        {TILES.map((tile) => {
+          const authorized = departments.includes(tile.department);
 
-      <div className="bg-white rounded-xl shadow-sm ring-1 ring-black/5 divide-y divide-neutral-100">
-        {staff.length === 0 && <p className="p-6 text-neutral-500 text-center">Aucune fiche trouvée.</p>}
-        {staff.map((s) => (
-          <Link
-            key={s.id}
-            href={`/admin/${s.id}/edit`}
-            className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50 transition-colors"
-          >
-            <div>
-              <p className="font-medium">{s.full_name}</p>
-              <p className="text-sm text-neutral-500">
-                {s.function_title} · {s.matricule}
-              </p>
-            </div>
-            <div className="flex shrink-0 gap-2">
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  s.active ? "bg-ci-green-pale text-ci-green-dark" : "bg-red-100 text-red-700"
-                }`}
+          if (!authorized) {
+            return (
+              <div
+                key={tile.department}
+                className="rounded-xl bg-neutral-100 p-6 ring-1 ring-black/5 opacity-60"
+                title="Accès non autorisé"
               >
-                {s.active ? "Badge actif" : "Badge désactivé"}
-              </span>
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  s.business_card_enabled ? "bg-ci-orange-pale text-ci-orange-dark" : "bg-neutral-100 text-neutral-500"
-                }`}
-              >
-                {s.business_card_enabled ? "Carte activée" : "Sans carte"}
-              </span>
-            </div>
-          </Link>
-        ))}
+                <h2 className="font-medium text-neutral-500">🔒 {tile.title}</h2>
+                <p className="text-sm text-neutral-400 mt-2">{tile.description}</p>
+                <p className="text-xs text-neutral-400 mt-3">Accès non autorisé</p>
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={tile.department}
+              href={tile.href}
+              className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5 hover:ring-ci-green hover:shadow-md transition-all"
+            >
+              <h2 className="font-medium text-navy-deep">{tile.title}</h2>
+              <p className="text-sm text-neutral-500 mt-2">{tile.description}</p>
+              {!tile.ready && <p className="text-xs text-ci-orange-dark mt-3">En construction</p>}
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

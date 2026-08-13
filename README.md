@@ -1,10 +1,15 @@
-# Cartes de visite & Badges QR — AMBACI Vienne
+# AMBACI Vienne — Administration (Cartes, Badges & plus)
 
-Application Next.js (App Router, TypeScript) pour gérer les cartes de visite numériques et les
-badges d'identité du personnel de l'Ambassade / Mission permanente de Côte d'Ivoire à Vienne
-(~100 fiches), déployée sur **Cloudflare Workers** via l'adaptateur OpenNext.
+Application Next.js (App Router, TypeScript) pour l'administration de l'Ambassade / Mission
+permanente de Côte d'Ivoire à Vienne, déployée sur **Cloudflare Workers** via l'adaptateur OpenNext.
+Conçue comme une application à **plusieurs départements**, chacun avec son propre accès :
 
-Voir [`BUILD_SPEC.md`](./BUILD_SPEC.md) pour la spécification complète.
+- **Protocole** (opérationnel) — cartes de visite numériques et badges QR du personnel (~100 fiches).
+- **Service consulaire** (à venir) — passeports, visas, cartes consulaires des ressortissants ivoiriens.
+- **Paierie** (à venir).
+
+Voir « Départements et droits d'accès » ci-dessous pour le fonctionnement des permissions, et
+[`BUILD_SPEC.md`](./BUILD_SPEC.md) pour la spécification complète du module Protocole.
 
 ## Stack
 
@@ -23,10 +28,8 @@ Voir [`BUILD_SPEC.md`](./BUILD_SPEC.md) pour la spécification complète.
 npm install
 cp .dev.vars.example .dev.vars   # renseigner SESSION_SECRET / RESEND_API_KEY
 
-# Appliquer le schéma à la base D1 locale (émulée par wrangler)
-npx wrangler d1 execute ambaci-cartes --local --file=./migrations/0001_init.sql
-npx wrangler d1 execute ambaci-cartes --local --file=./migrations/0002_add_english_fields.sql
-npx wrangler d1 execute ambaci-cartes --local --file=./migrations/0003_admin_users.sql
+# Appliquer le schéma à la base D1 locale (émulée par wrangler) — dans l'ordre
+for f in migrations/*.sql; do npx wrangler d1 execute ambaci-cartes --local --file="$f"; done
 
 npm run dev
 ```
@@ -35,7 +38,8 @@ npm run dev
 `initOpenNextCloudflareForDev()` — aucune ressource Cloudflare réelle n'est nécessaire pour la
 base/le stockage (Workers AI, lui, appelle toujours le service distant — voir avertissement au
 build). Créez un premier compte admin dans la base locale (voir « Authentification admin »
-ci-dessous), connectez-vous sur `/login`, créez une première fiche via `/admin/new`, puis vérifiez
+ci-dessous), connectez-vous sur `/login` — vous arrivez sur le tableau de bord des départements —
+ouvrez **Protocole**, créez une première fiche via `/admin/protocole/new`, puis vérifiez
 `/c/[slug]`, `/verify/[matricule]` et les deux routes `/qr/.../[x].png`.
 
 Après toute modification de `wrangler.jsonc`, régénérez les types :
@@ -58,9 +62,7 @@ Copiez le `database_id` renvoyé dans `wrangler.jsonc` (remplace `REPLACE_WITH_D
 ### 2. Appliquer le schéma à la base distante
 
 ```bash
-npx wrangler d1 execute ambaci-cartes --remote --file=./migrations/0001_init.sql
-npx wrangler d1 execute ambaci-cartes --remote --file=./migrations/0002_add_english_fields.sql
-npx wrangler d1 execute ambaci-cartes --remote --file=./migrations/0003_admin_users.sql
+for f in migrations/*.sql; do npx wrangler d1 execute ambaci-cartes --remote --file="$f"; done
 ```
 
 ### 3. Build + déploiement
@@ -139,6 +141,30 @@ la clé n'est pas configurée, la demande est acceptée silencieusement mais l'e
 **Optionnel — défense en profondeur** : on peut ajouter **Cloudflare Access** (Zero Trust) devant
 `/admin*` en plus de ce login applicatif. Non requis.
 
+## Départements et droits d'accès
+
+`/admin` est un tableau de bord avec une tuile par département (**Protocole**, **Service
+consulaire**, **Paierie**). Un admin ne voit une tuile déverrouillée que s'il a été affecté à ce
+département — sinon elle apparaît grisée avec un cadenas. C'est indépendant du compte lui-même :
+tout admin peut se connecter, activer sa 2FA, inviter/retirer d'autres admins ; seul l'accès aux
+*modules fonctionnels* (Protocole aujourd'hui, Consulaire/Paierie plus tard) est restreint par
+département.
+
+- Table D1 `admin_departments` (`migrations/0005_admin_departments.sql`) — relation admin ↔
+  département (many-to-many, un admin peut cumuler plusieurs départements).
+- Chaque page/route d'un module vérifie elle-même `hasDepartment(db, adminId, "protocole")` (voir
+  `lib/adminUsers.ts`) en plus de la session — `middleware.ts` ne fait qu'une vérification générique
+  « est connecté », ce contrôle par département est fait séparément dans chaque page et chaque route
+  `/api/staff/*`.
+- **Affecter des départements** : à l'invitation (`/admin/admins`, cases à cocher) ou après coup
+  (bouton « Modifier » sur la fiche d'un admin existant, même page). Toujours au moins un
+  département sélectionné.
+- Les deux admins fondateurs (créés avant ce système) ont été affectés aux trois départements par
+  la migration elle-même — à ajuster manuellement si besoin une fois Consulaire/Paierie réels.
+- Consulaire et Paierie n'ont pour l'instant qu'une page « en construction » — le contrôle d'accès
+  est déjà en place pour que les vraies fonctionnalités s'y branchent directement quand elles seront
+  développées.
+
 ## À préparer côté utilisateur
 
 - [ ] Le nom de domaine (ou sous-chemin) à router vers le Worker.
@@ -153,15 +179,17 @@ la clé n'est pas configurée, la demande est acceptée silencieusement mais l'e
 - `app/c/[slug]` — carte de visite publique (recto/verso, vCard, QR).
 - `app/verify/[matricule]` — page de vérification de badge (mode minimal par défaut, cf. `VERIFY_MODE`).
 - `app/qr/card/[filename]` et `app/qr/verify/[filename]` — QR PNG générés à la volée.
-- `app/admin` — liste, création, édition, upload photo, aperçu live, export haute qualité (PNG/JPEG/PDF), protégé par `/login`.
+- `app/admin` — tableau de bord des départements (tuiles Protocole / Service consulaire / Paierie), protégé par `/login`.
+- `app/admin/protocole` — module Protocole : liste, création, édition, upload photo, aperçu live, export haute qualité (PNG/JPEG/PDF). Nécessite le département `protocole`.
+- `app/admin/consulaire`, `app/admin/paierie` — pages « en construction », déjà protégées par département en attendant les vraies fonctionnalités.
 - `app/admin/security` — activation/désactivation de la 2FA (TOTP) pour le compte connecté.
-- `app/admin/admins` — inviter/retirer des administrateurs.
+- `app/admin/admins` — inviter/retirer des administrateurs, affecter leurs départements.
 - `app/login` — connexion admin (email + mot de passe, puis code 2FA si activée).
 - `app/forgot-password` / `app/reset-password` — demande et application d'une réinitialisation de mot de passe par e-mail (aussi utilisé pour la définition du mot de passe lors d'une invitation admin).
-- `app/api/staff` — endpoints CRUD ; `app/api/staff/[id]/photo` — upload R2 ; `app/api/photo/[...key]` — service des photos.
-- `app/api/auth` — login/logout/verify-2fa, `forgot-password`/`reset-password`, `totp/setup`|`confirm`|`disable`, `admins`/`admins/[id]` (inviter/retirer).
+- `app/api/staff` — endpoints CRUD (protégés par le département `protocole`) ; `app/api/staff/[id]/photo` — upload R2 ; `app/api/photo/[...key]` — service des photos.
+- `app/api/auth` — login/logout/verify-2fa, `forgot-password`/`reset-password`, `totp/setup`|`confirm`|`disable`, `admins`/`admins/[id]` (inviter/retirer/modifier les départements).
 - `app/api/translate` — traduction FR→EN à la volée (Cloudflare Workers AI) pour la carte de visite publique.
-- `middleware.ts` — protège `/admin/*` et `/api/staff/*` (runtime Edge, requis par OpenNext).
-- `lib/` — accès D1 (`db.ts`, `staff.ts`, `adminUsers.ts`), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`).
+- `middleware.ts` — vérifie la session sur `/admin/*` et `/api/staff/*` (runtime Edge, requis par OpenNext) ; le contrôle par département est fait séparément dans chaque page/route concernée.
+- `lib/` — accès D1 (`db.ts`, `staff.ts`, `adminUsers.ts` — comptes admin + départements), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`).
 - `components/` — `BusinessCard.tsx` (recto/verso, 85,6×54 mm), `Badge.tsx` (portrait CR80, 54×85,6 mm).
-- `migrations/` — schéma D1 (table `staff`, colonnes `institution_en`/`function_title_en`, puis `admin_users`).
+- `migrations/` — schéma D1 : `staff` (0001), colonnes EN (0002), `admin_users` (0003), `business_card_enabled` (0004), `admin_departments` (0005).

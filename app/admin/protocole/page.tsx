@@ -1,0 +1,85 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getDb } from "@/lib/db";
+import { listStaff } from "@/lib/staff";
+import { hasDepartment } from "@/lib/adminUsers";
+import { getCurrentAdminUser } from "@/lib/authSession";
+
+export const metadata = { title: "Protocole — Admin AMBACI Vienne" };
+export const dynamic = "force-dynamic";
+
+type SearchParams = Promise<{ q?: string }>;
+
+export default async function ProtocoleListPage({ searchParams }: { searchParams: SearchParams }) {
+  const user = await getCurrentAdminUser();
+  if (!user) redirect("/login");
+
+  const db = getDb();
+  const authorized = await hasDepartment(db, user.id, "protocole");
+  if (!authorized) redirect("/admin");
+
+  const { q } = await searchParams;
+  const staff = await listStaff(db, q);
+
+  return (
+    <main className="min-h-screen p-6 max-w-4xl mx-auto">
+      <Link href="/admin" className="text-sm text-ci-green-dark hover:underline">
+        ← Retour à l&apos;accueil
+      </Link>
+
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-6 mt-2">
+        <h1 className="font-serif text-2xl font-bold">Protocole — Personnel AMBACI Vienne</h1>
+        <Link
+          href="/admin/protocole/new"
+          className="rounded-full bg-ci-green px-5 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors"
+        >
+          + Nouvelle fiche
+        </Link>
+      </div>
+
+      <form className="mb-6">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Rechercher un nom, une fonction, un matricule…"
+          className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-ci-green"
+        />
+      </form>
+
+      <div className="bg-white rounded-xl shadow-sm ring-1 ring-black/5 divide-y divide-neutral-100">
+        {staff.length === 0 && <p className="p-6 text-neutral-500 text-center">Aucune fiche trouvée.</p>}
+        {staff.map((s) => (
+          <Link
+            key={s.id}
+            href={`/admin/protocole/${s.id}/edit`}
+            className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50 transition-colors"
+          >
+            <div>
+              <p className="font-medium">{s.full_name}</p>
+              <p className="text-sm text-neutral-500">
+                {s.function_title} · {s.matricule}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  s.active ? "bg-ci-green-pale text-ci-green-dark" : "bg-red-100 text-red-700"
+                }`}
+              >
+                {s.active ? "Badge actif" : "Badge désactivé"}
+              </span>
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  s.business_card_enabled ? "bg-ci-orange-pale text-ci-orange-dark" : "bg-neutral-100 text-neutral-500"
+                }`}
+              >
+                {s.business_card_enabled ? "Carte activée" : "Sans carte"}
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
