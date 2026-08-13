@@ -33,11 +33,14 @@ export default async function ConsulairePage() {
           </p>
         </Link>
 
-        <div className="rounded-xl bg-neutral-100 p-6 ring-1 ring-black/5 opacity-60">
-          <h2 className="font-medium text-neutral-500">Visas</h2>
-          <p className="text-sm text-neutral-400 mt-2">Module à venir.</p>
-          <p className="text-xs text-ci-orange-dark mt-3">En construction</p>
-        </div>
+        <Link
+          href="/admin/consulaire/visas"
+          className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5 hover:ring-ci-orange hover:shadow-md transition-all"
+        >
+          <h2 className="font-medium text-navy-deep">Visas</h2>
+          <p className="text-sm text-neutral-500 mt-2">Module à venir.</p>
+          <p className="text-xs text-ci-orange-dark mt-3 font-semibold uppercase tracking-wide">En construction</p>
+        </Link>
       </div>
     </main>
   );
