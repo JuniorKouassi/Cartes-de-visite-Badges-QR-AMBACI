@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentAdminUser } from "@/lib/authSession";
 import { AdminsView } from "./AdminsView";
@@ -11,7 +12,10 @@ export default async function AdminsPage() {
 
   return (
     <main className="min-h-screen p-6 max-w-2xl mx-auto">
-      <h1 className="font-serif text-2xl font-bold mb-6">Administrateurs</h1>
+      <Link href="/admin" className="text-sm text-ci-green-dark hover:underline">
+        ← Retour à l&apos;accueil
+      </Link>
+      <h1 className="font-serif text-2xl font-bold mt-2 mb-6">Administrateurs</h1>
       <AdminsView currentUserId={user.id} />
     </main>
   );
