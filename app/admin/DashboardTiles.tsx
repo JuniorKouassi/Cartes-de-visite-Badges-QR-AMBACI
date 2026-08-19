@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { IdCard, Stamp, Banknote, Lock, type LucideIcon } from "lucide-react";
+import { IdCard, Stamp, Banknote, FileClock, Lock, type LucideIcon } from "lucide-react";
 import type { Department } from "@/lib/adminUsers";
 
 type Tile = {
@@ -17,6 +17,7 @@ const ICONS: Record<Department, LucideIcon> = {
   protocole: IdCard,
   consulaire: Stamp,
   paierie: Banknote,
+  chrono: FileClock,
 };
 
 const ACCENTS: Record<Department, { ring: string; glow: string; iconBg: string; iconText: string }> = {
@@ -36,6 +37,12 @@ const ACCENTS: Record<Department, { ring: string; glow: string; iconBg: string; 
     ring: "hover:ring-navy",
     glow: "from-navy/25 via-navy/10 to-transparent",
     iconBg: "bg-neutral-100",
+    iconText: "text-navy-deep",
+  },
+  chrono: {
+    ring: "hover:ring-navy",
+    glow: "from-navy/25 via-navy/10 to-transparent",
+    iconBg: "bg-navy/10",
     iconText: "text-navy-deep",
   },
 };

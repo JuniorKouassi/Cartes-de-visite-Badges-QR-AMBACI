@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getCurrentAdminUser } from "@/lib/authSession";
-import { countAdminUsers, deleteAdminUser, getAdminUserById, isDepartment, setAdminDepartments } from "@/lib/adminUsers";
+import { countAdminUsers, deleteAdminUser, getAdminUserById, isChronoRole, isDepartment,
+         setAdminDepartments, setChronoGrant } from "@/lib/adminUsers";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentAdminUser();
@@ -18,13 +19,24 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Administrateur introuvable" }, { status: 404 });
   }
 
-  const body = (await request.json().catch(() => null)) as { departments?: string[] } | null;
+  const body = (await request.json().catch(() => null)) as {
+    departments?: string[]; chronoRole?: string; chronoFonction?: string;
+  } | null;
   const departments = (body?.departments ?? []).filter(isDepartment);
   if (departments.length === 0) {
     return NextResponse.json({ error: "Sélectionnez au moins un département" }, { status: 400 });
   }
 
+  const chronoRole = body?.chronoRole && isChronoRole(body.chronoRole) ? body.chronoRole : null;
+  if (departments.includes("chrono") && !chronoRole) {
+    return NextResponse.json({ error: "Choisissez un rôle Chrono" }, { status: 400 });
+  }
+
   await setAdminDepartments(env.DB, targetId, departments);
+  // Retirer l'habilitation retire le rôle : on ne laisse pas traîner un droit
+  // de signature sur un compte qui n'a plus accès au service.
+  await setChronoGrant(env.DB, targetId, departments.includes("chrono") ? chronoRole : null,
+                       body?.chronoFonction?.trim() || null);
   return NextResponse.json({ ok: true });
 }
 

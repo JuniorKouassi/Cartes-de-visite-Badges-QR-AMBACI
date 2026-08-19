@@ -11,3 +11,8 @@ SESSION_SECRET=any-long-random-string
 
 # Resend API key used to send password-reset emails (https://resend.com/api-keys).
 RESEND_API_KEY=
+
+# Liaison avec Chrono. Le MEME secret doit être posé sur le Worker Chrono.
+# Générer : openssl rand -hex 32
+CHRONO_SSO_SECRET=
+CHRONO_URL=http://127.0.0.1:8795

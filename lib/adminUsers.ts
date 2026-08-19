@@ -8,7 +8,7 @@ export interface AdminUser {
   updated_at: string;
 }
 
-export const DEPARTMENTS = ["protocole", "consulaire", "paierie"] as const;
+export const DEPARTMENTS = ["protocole", "consulaire", "paierie", "chrono"] as const;
 export type Department = (typeof DEPARTMENTS)[number];
 
 export function isDepartment(value: string): value is Department {
@@ -125,5 +125,61 @@ export async function disableAdminTotp(db: D1Database, id: number): Promise<void
       "UPDATE admin_users SET totp_enabled = 0, totp_secret = NULL, updated_at = datetime('now') WHERE id = ?"
     )
     .bind(id)
+    .run();
+}
+
+/* ------------------------------------------------------------------ Chrono
+ * L'habilitation dit quels services une personne voit. Le rôle dit ce qu'elle
+ * y fait. Les deux sont indépendants : un conseiller et le chef de mission
+ * voient tous deux la tuile Chrono, mais l'un signe et l'autre non.
+ */
+export const CHRONO_ROLES = ["chef", "secretariat", "conseiller", "admin"] as const;
+export type ChronoRole = (typeof CHRONO_ROLES)[number];
+
+export const CHRONO_ROLE_LABELS: Record<ChronoRole, string> = {
+  chef: "Chef de mission",
+  secretariat: "Secrétariat",
+  conseiller: "Conseiller",
+  admin: "Administrateur",
+};
+
+export function isChronoRole(value: string): value is ChronoRole {
+  return (CHRONO_ROLES as readonly string[]).includes(value);
+}
+
+export type ChronoGrant = { role: ChronoRole; fonction: string | null };
+
+export async function getChronoGrant(db: D1Database, adminId: number): Promise<ChronoGrant | null> {
+  const row = await db
+    .prepare("SELECT role, fonction FROM admin_chrono_roles WHERE admin_id = ?")
+    .bind(adminId)
+    .first<{ role: ChronoRole; fonction: string | null }>();
+  return row ? { role: row.role, fonction: row.fonction } : null;
+}
+
+export async function listChronoGrants(db: D1Database): Promise<Map<number, ChronoGrant>> {
+  const { results } = await db
+    .prepare("SELECT admin_id, role, fonction FROM admin_chrono_roles")
+    .all<{ admin_id: number; role: ChronoRole; fonction: string | null }>();
+  return new Map(results.map((r) => [r.admin_id, { role: r.role, fonction: r.fonction }]));
+}
+
+export async function setChronoGrant(
+  db: D1Database,
+  adminId: number,
+  role: ChronoRole | null,
+  fonction?: string | null
+): Promise<void> {
+  if (role === null) {
+    await db.prepare("DELETE FROM admin_chrono_roles WHERE admin_id = ?").bind(adminId).run();
+    return;
+  }
+  await db
+    .prepare(
+      `INSERT INTO admin_chrono_roles (admin_id, role, fonction, MAJ_le)
+       VALUES (?, ?, ?, datetime('now'))
+       ON CONFLICT(admin_id) DO UPDATE SET role = ?, fonction = ?, MAJ_le = datetime('now')`
+    )
+    .bind(adminId, role, fonction ?? null, role, fonction ?? null)
     .run();
 }

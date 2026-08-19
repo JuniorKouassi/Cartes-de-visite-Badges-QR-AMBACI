@@ -2,14 +2,65 @@
 
 import { useEffect, useState } from "react";
 
-type Department = "protocole" | "consulaire" | "paierie";
-type Admin = { id: number; email: string; totp_enabled: number; created_at: string; departments: Department[] };
+type Department = "protocole" | "consulaire" | "paierie" | "chrono";
+type ChronoRole = "chef" | "secretariat" | "conseiller" | "admin";
+type Admin = {
+  id: number; email: string; totp_enabled: number; created_at: string;
+  departments: Department[]; chronoRole: ChronoRole | null; chronoFonction: string | null;
+};
 
 const DEPARTMENT_OPTIONS: { value: Department; label: string }[] = [
   { value: "protocole", label: "Protocole" },
   { value: "consulaire", label: "Service consulaire" },
   { value: "paierie", label: "Paierie" },
+  { value: "chrono", label: "Chrono" },
 ];
+
+// Le rôle dit ce qu'on fait DANS Chrono. L'habilitation dit seulement qu'on y entre.
+const CHRONO_ROLE_OPTIONS: { value: ChronoRole; label: string; aide: string }[] = [
+  { value: "chef", label: "Chef de mission", aide: "Signe le courrier départ, impute le courrier arrivée" },
+  { value: "secretariat", label: "Secrétariat", aide: "Rédige, enregistre, imprime, tient les registres" },
+  { value: "conseiller", label: "Conseiller", aide: "Ne voit que les dossiers qui lui sont imputés" },
+  { value: "admin", label: "Administrateur", aide: "Tout, y compris les paramètres du poste" },
+];
+
+function ChronoRoleSelect({
+  value,
+  fonction,
+  onChange,
+}: {
+  value: ChronoRole | null;
+  fonction: string;
+  onChange: (role: ChronoRole | null, fonction: string) => void;
+}) {
+  const choisi = CHRONO_ROLE_OPTIONS.find((o) => o.value === value);
+  return (
+    <div className="w-full rounded-lg bg-navy/5 px-3 py-2.5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-navy-deep mb-2">Rôle dans Chrono</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange((e.target.value || null) as ChronoRole | null, fonction)}
+          className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm"
+        >
+          <option value="">— aucun —</option>
+          {CHRONO_ROLE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        {(value === "chef" || value === "admin") && (
+          <input
+            value={fonction}
+            onChange={(e) => onChange(value, e.target.value)}
+            placeholder="Le Chargé d'Affaires a.i."
+            className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm w-56"
+          />
+        )}
+      </div>
+      {choisi && <p className="mt-1.5 text-xs text-neutral-500">{choisi.aide}</p>}
+    </div>
+  );
+}
 
 function DepartmentCheckboxes({
   selected,
@@ -43,6 +94,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
   const [admins, setAdmins] = useState<Admin[] | null>(null);
   const [email, setEmail] = useState("");
   const [inviteDepartments, setInviteDepartments] = useState<Department[]>(["protocole"]);
+  const [inviteChronoRole, setInviteChronoRole] = useState<ChronoRole | null>(null);
+  const [inviteChronoFonction, setInviteChronoFonction] = useState("");
   const [inviting, setInviting] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +104,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
   const [copied, setCopied] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDepartments, setEditDepartments] = useState<Department[]>([]);
+  const [editChronoRole, setEditChronoRole] = useState<ChronoRole | null>(null);
+  const [editChronoFonction, setEditChronoFonction] = useState("");
   const [savingDepartments, setSavingDepartments] = useState(false);
 
   async function loadAdmins() {
@@ -75,7 +130,12 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
       const res = await fetch("/api/auth/admins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, departments: inviteDepartments }),
+        body: JSON.stringify({
+          email,
+          departments: inviteDepartments,
+          chronoRole: inviteChronoRole,
+          chronoFonction: inviteChronoFonction,
+        }),
       });
       const data = (await res.json().catch(() => null)) as
         | { error?: string; emailSent?: boolean; setPasswordUrl?: string }
@@ -89,6 +149,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
       }
       setEmail("");
       setInviteDepartments(["protocole"]);
+      setInviteChronoRole(null);
+      setInviteChronoFonction("");
       await loadAdmins();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
@@ -124,6 +186,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
   function startEditing(admin: Admin) {
     setEditingId(admin.id);
     setEditDepartments(admin.departments);
+    setEditChronoRole(admin.chronoRole);
+    setEditChronoFonction(admin.chronoFonction ?? "");
     setError(null);
   }
 
@@ -134,7 +198,11 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
       const res = await fetch(`/api/auth/admins/${admin.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ departments: editDepartments }),
+        body: JSON.stringify({
+          departments: editDepartments,
+          chronoRole: editChronoRole,
+          chronoFonction: editChronoFonction,
+        }),
       });
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) throw new Error(data?.error ?? "Échec de la mise à jour");
@@ -168,13 +236,26 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
             />
             <button
               type="submit"
-              disabled={inviting || inviteDepartments.length === 0}
+              disabled={
+                inviting ||
+                inviteDepartments.length === 0 ||
+                (inviteDepartments.includes("chrono") && !inviteChronoRole)
+              }
               className="rounded-full bg-ci-green px-5 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60 shrink-0"
             >
               {inviting ? "Envoi…" : "Inviter"}
             </button>
           </div>
           <DepartmentCheckboxes selected={inviteDepartments} onChange={setInviteDepartments} />
+          {inviteDepartments.includes("chrono") && (
+            <div className="mt-3">
+              <ChronoRoleSelect
+                value={inviteChronoRole}
+                fonction={inviteChronoFonction}
+                onChange={(r, f) => { setInviteChronoRole(r); setInviteChronoFonction(f); }}
+              />
+            </div>
+          )}
         </form>
 
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
@@ -247,11 +328,22 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
             {editingId === admin.id ? (
               <div className="flex flex-wrap items-center gap-3">
                 <DepartmentCheckboxes selected={editDepartments} onChange={setEditDepartments} />
+                {editDepartments.includes("chrono") && (
+                  <ChronoRoleSelect
+                    value={editChronoRole}
+                    fonction={editChronoFonction}
+                    onChange={(r, f) => { setEditChronoRole(r); setEditChronoFonction(f); }}
+                  />
+                )}
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => saveDepartments(admin)}
-                    disabled={savingDepartments || editDepartments.length === 0}
+                    disabled={
+                      savingDepartments ||
+                      editDepartments.length === 0 ||
+                      (editDepartments.includes("chrono") && !editChronoRole)
+                    }
                     className="text-sm rounded-full bg-ci-green px-3 py-1 text-white font-medium hover:bg-ci-green-dark transition-colors disabled:opacity-60"
                   >
                     {savingDepartments ? "…" : "Enregistrer"}
@@ -278,6 +370,11 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
                     {DEPARTMENT_OPTIONS.find((o) => o.value === dept)?.label ?? dept}
                   </span>
                 ))}
+                {admin.chronoRole && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-navy/10 text-navy-deep">
+                    Chrono : {CHRONO_ROLE_OPTIONS.find((o) => o.value === admin.chronoRole)?.label}
+                  </span>
+                )}
               </div>
             )}
           </div>

@@ -29,6 +29,13 @@ const TILES: { department: Department; title: string; description: string; href:
     href: "/admin/paierie",
     ready: false,
   },
+  {
+    department: "chrono",
+    title: "Chrono",
+    description: "Registre et parapheur du courrier, pour le pool secrétariat.",
+    href: "/admin/chrono",
+    ready: true,
+  },
 ];
 
 export default async function AdminHomePage() {

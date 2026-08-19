@@ -204,3 +204,64 @@ constante `AMBASSADOR_NAME` dans `components/ConsularCard.tsx`, pas une donnée 
 - `lib/` — accès D1 (`db.ts`, `staff.ts`, `consularHolders.ts`, `adminUsers.ts` — comptes admin + départements), auth (`auth.ts` — jetons signés, `authSession.ts` — admin courant, `passwordHash.ts` — PBKDF2, `totp.ts` — RFC 6238), slug (`slug.ts`), vCard (`vcard.ts`), QR (`qr.ts`), e-mail (`email.ts` — Resend), traduction (`translate.ts`), fonts (`fonts.ts`).
 - `components/` — `BusinessCard.tsx` (recto/verso, 85,6×54 mm), `Badge.tsx` (portrait CR80, 54×85,6 mm), `ConsularCard.tsx` (carte consulaire recto/verso, 85,6×54 mm).
 - `migrations/` — schéma D1 : `staff` (0001), colonnes EN (0002), `admin_users` (0003), `business_card_enabled` (0004), `admin_departments` (0005), `consular_holders` (0006).
+
+## Chrono, quatrième service
+
+Chrono est le registre et le parapheur du courrier, tenu par le pool secrétariat.
+Il tourne sur son propre Worker et sa propre base ; le tableau de bord lui ouvre
+la porte plutôt que de l'héberger.
+
+### Deux dimensions, pas une
+
+`admin_departments` dit **quels services** une personne voit. Elle ne dit pas ce
+qu'elle y fait, ce qui suffit pour Protocole ou Consulaire mais pas pour Chrono :
+le chef de mission signe, le secrétariat rédige, le conseiller ne voit que ses
+propres dossiers. D'où `admin_chrono_roles`, une seconde dimension.
+
+| Rôle | Ce qu'il fait dans Chrono |
+|---|---|
+| `chef` | Signe le courrier départ, impute le courrier arrivée, suit l'échéancier |
+| `secretariat` | Rédige, enregistre le courrier reçu, imprime, tient les registres |
+| `conseiller` | Ne voit que les dossiers qui lui sont imputés, rend compte |
+| `admin` | Tout, y compris les paramètres du poste |
+
+Cocher Chrono sans choisir de rôle est refusé : l'application ne saurait pas quoi
+montrer. Décocher Chrono retire le rôle, pour ne pas laisser traîner un droit de
+signature sur un compte qui n'a plus accès au service.
+
+### Passage de témoin
+
+Cliquer la tuile n'ouvre pas une seconde connexion. Le site signe un jeton d'une
+minute portant l'adresse, le nom, le rôle et la fonction, et le poste vers Chrono
+en `POST`. Chrono vérifie la signature avec le même secret, crée ou aligne le
+compte, et ouvre la session avec ce rôle.
+
+Le jeton ne passe jamais par une URL : il se retrouverait dans l'historique, les
+journaux et l'en-tête `Referer`. Il porte un identifiant unique que Chrono retient,
+donc il ne peut pas être rejoué, même dans sa minute de validité.
+
+Le portail est la source de vérité : à chaque entrée, Chrono réaligne le rôle sur
+celui déclaré ici. Changer le rôle sur cette page suffit, il n'y a rien à toucher
+dans Chrono.
+
+### Mise en service
+
+```bash
+# 1. Le département chrono et la table des rôles
+npx wrangler d1 execute ambaci-cartes --remote --file=./migrations/0007_chrono.sql
+
+# 2. Le secret de liaison, LE MÊME des deux côtés
+openssl rand -hex 32                       # garder la valeur
+npx wrangler secret put CHRONO_SSO_SECRET  # ici
+#   puis, dans le dépôt Chrono :
+#   npx wrangler secret put CHRONO_SSO_SECRET
+
+# 3. L'adresse de Chrono est déclarée dans wrangler.jsonc (CHRONO_URL)
+
+npm run deploy
+```
+
+La migration reconstruit `admin_departments` : SQLite ne sait pas modifier une
+contrainte `CHECK`, il faut passer par une table neuve. Les habilitations
+existantes sont recopiées. Les administrateurs déjà en place reçoivent le
+département `chrono` et le rôle `admin`.
