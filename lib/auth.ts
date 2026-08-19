@@ -1,7 +1,9 @@
 export const SESSION_COOKIE = "ambaci_admin_session";
 export const PENDING_2FA_COOKIE = "ambaci_pending_2fa";
 
-export const SESSION_TTL_SECONDS = 30 * 60; // 30 minutes, refreshed on each authenticated request
+// 30 days, refreshed on each authenticated request (sliding window) — was 30
+// minutes; raised at the user's request to stop logging admins out mid-work.
+export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const PENDING_2FA_TTL_SECONDS = 5 * 60;
 export const RESET_TOKEN_TTL_SECONDS = 30 * 60;
 export const INVITE_TOKEN_TTL_SECONDS = 24 * 60 * 60;
