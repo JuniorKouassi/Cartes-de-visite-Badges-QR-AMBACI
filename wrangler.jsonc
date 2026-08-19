@@ -9,10 +9,12 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "VERIFY_MODE": "minimal",
-    // Adresse du Worker Chrono. Le secret de liaison est posé séparément :
-    // npx wrangler secret put CHRONO_SSO_SECRET
-    "CHRONO_URL": "https://chrono.kouassij019.workers.dev"
+    "VERIFY_MODE": "minimal"
+    // CHRONO_URL est volontairement absent tant que le Worker Chrono n'est pas
+    // réellement déployé : /admin/chrono affiche alors "Chrono n'est pas encore
+    // relié" plutôt que de poster vers une adresse qui n'existe pas. Une fois
+    // Chrono déployé, ajouter ici : "CHRONO_URL": "https://<son-adresse>".
+    // Le secret de liaison est posé séparément : npx wrangler secret put CHRONO_SSO_SECRET
   },
   "d1_databases": [
     {
