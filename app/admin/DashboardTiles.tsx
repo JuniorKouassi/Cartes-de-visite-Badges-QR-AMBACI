@@ -20,31 +20,11 @@ const ICONS: Record<Department, LucideIcon> = {
   chrono: FileClock,
 };
 
-const ACCENTS: Record<Department, { ring: string; glow: string; iconBg: string; iconText: string }> = {
-  protocole: {
-    ring: "hover:ring-ci-green",
-    glow: "from-ci-green/30 via-ci-green/10 to-transparent",
-    iconBg: "bg-ci-green-pale",
-    iconText: "text-ci-green-dark",
-  },
-  consulaire: {
-    ring: "hover:ring-ci-orange",
-    glow: "from-ci-orange/30 via-ci-orange/10 to-transparent",
-    iconBg: "bg-ci-orange-pale",
-    iconText: "text-ci-orange-dark",
-  },
-  paierie: {
-    ring: "hover:ring-navy",
-    glow: "from-navy/25 via-navy/10 to-transparent",
-    iconBg: "bg-neutral-100",
-    iconText: "text-navy-deep",
-  },
-  chrono: {
-    ring: "hover:ring-navy",
-    glow: "from-navy/25 via-navy/10 to-transparent",
-    iconBg: "bg-navy/10",
-    iconText: "text-navy-deep",
-  },
+const ICON_TINTS: Record<Department, string> = {
+  protocole: "text-ci-green-dark",
+  consulaire: "text-ci-orange-dark",
+  paierie: "text-navy-deep",
+  chrono: "text-navy-deep",
 };
 
 const containerVariants = {
@@ -57,9 +37,9 @@ const tileVariants = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-const glowVariants = {
-  rest: { opacity: 0, scale: 0.85 },
-  hover: { opacity: 1, scale: 1.15, transition: { duration: 0.4, ease: "easeOut" as const } },
+const cardHoverVariants = {
+  rest: { scale: 1, y: 0 },
+  hover: { scale: 1.035, y: -6, transition: { duration: 0.3, ease: "easeOut" as const } },
 };
 
 const iconVariants = {
@@ -78,7 +58,6 @@ export function DashboardTiles({ tiles, departments }: { tiles: Tile[]; departme
       {tiles.map((tile) => {
         const authorized = departments.includes(tile.department);
         const Icon = ICONS[tile.department];
-        const accent = ACCENTS[tile.department];
 
         if (!authorized) {
           return (
@@ -86,7 +65,7 @@ export function DashboardTiles({ tiles, departments }: { tiles: Tile[]; departme
               key={tile.department}
               variants={tileVariants}
               title="Accès non autorisé"
-              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-neutral-100 ring-1 ring-black/5 flex flex-col items-center text-center px-6 pt-9 opacity-70 grayscale"
+              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl bg-neutral-100 ring-1 ring-black/5 flex flex-col items-center text-center px-6 pt-9 opacity-70 grayscale"
             >
               <div className="w-16 h-16 rounded-2xl bg-neutral-200 flex items-center justify-center mb-5 shrink-0">
                 <Lock className="w-7 h-7 text-neutral-400" />
@@ -99,29 +78,43 @@ export function DashboardTiles({ tiles, departments }: { tiles: Tile[]; departme
         }
 
         return (
-          <motion.div key={tile.department} variants={tileVariants} initial="rest" whileHover="hover" whileTap={{ scale: 0.97 }} className="relative">
+          <motion.div
+            key={tile.department}
+            variants={tileVariants}
+            className="relative"
+          >
             <motion.div
-              variants={glowVariants}
-              className={`absolute -inset-3 rounded-[2rem] bg-gradient-to-br ${accent.glow} blur-xl -z-10`}
-            />
+              initial="rest"
+              whileHover="hover"
+              whileTap={{ scale: 0.97 }}
+              variants={cardHoverVariants}
+              className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl shadow-[0_25px_60px_-18px_rgba(20,30,50,0.28),0_10px_24px_-12px_rgba(20,30,50,0.14)] transition-shadow duration-300 hover:shadow-[0_32px_70px_-16px_rgba(20,30,50,0.32),0_14px_30px_-10px_rgba(20,30,50,0.18)]"
+            >
+            {/* glowing tricolor blob, clipped to the card's rounded bounds */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 w-[75%] aspect-square rounded-full opacity-90 blur-[38px] animate-ambaci-blob bg-gradient-to-r from-ci-orange via-white to-ci-green" />
+            </div>
+
+            {/* frosted glass panel holding the content */}
             <Link
               href={tile.href}
-              className={`group relative flex flex-col items-center text-center w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-white px-6 pt-9 shadow-md ring-1 ring-black/5 transition-shadow duration-300 hover:shadow-2xl ${accent.ring}`}
+              className="group absolute inset-[5px] rounded-xl bg-white/90 backdrop-blur-xl ring-1 ring-white/70 flex flex-col items-center text-center px-6 pt-9 overflow-hidden"
             >
               <motion.div
                 variants={iconVariants}
-                className={`w-16 h-16 rounded-2xl ${accent.iconBg} flex items-center justify-center mb-5 shrink-0`}
+                className="w-16 h-16 rounded-2xl bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center mb-5 shrink-0"
               >
-                <Icon className={`w-8 h-8 ${accent.iconText}`} />
+                <Icon className={`w-8 h-8 ${ICON_TINTS[tile.department]}`} />
               </motion.div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-navy-deep leading-tight">{tile.title}</h2>
-              <p className="text-sm text-neutral-500 mt-3 leading-snug">{tile.description}</p>
+              <p className="text-sm text-neutral-600 mt-3 leading-snug">{tile.description}</p>
               {!tile.ready && (
                 <p className="text-xs text-ci-orange-dark mt-4 font-semibold uppercase tracking-wide">
                   En construction
                 </p>
               )}
             </Link>
+            </motion.div>
           </motion.div>
         );
       })}
