@@ -36,3 +36,7 @@ next-env.d.ts
 # design reference material (not needed at runtime)
 /design_reference/
 *.zip
+
+# scratch / reference material, not app source
+/Chrono/
+/Screenshots to show/

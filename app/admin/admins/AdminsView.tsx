@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 type Department = "protocole" | "consulaire" | "paierie" | "chrono";
-type ChronoRole = "chef" | "secretariat" | "conseiller" | "admin";
+type ChronoRole = "chef" | "secretariat" | "conseiller" | "rpa" | "payeur" | "saf" | "admin" | "neutre";
 type Admin = {
-  id: number; email: string; totp_enabled: number; created_at: string;
+  id: number; email: string; name: string | null; phone: string | null; totp_enabled: number; created_at: string;
   departments: Department[]; chronoRole: ChronoRole | null; chronoFonction: string | null;
 };
 
@@ -21,7 +21,11 @@ const CHRONO_ROLE_OPTIONS: { value: ChronoRole; label: string; aide: string }[] 
   { value: "chef", label: "Chef de mission", aide: "Signe le courrier départ, impute le courrier arrivée" },
   { value: "secretariat", label: "Secrétariat", aide: "Rédige, enregistre, imprime, tient les registres" },
   { value: "conseiller", label: "Conseiller", aide: "Ne voit que les dossiers qui lui sont imputés" },
+  { value: "rpa", label: "RPA", aide: "Mêmes droits que Conseiller" },
+  { value: "payeur", label: "Payeur", aide: "Mêmes droits que Conseiller" },
+  { value: "saf", label: "SAF", aide: "Mêmes droits que Conseiller" },
   { value: "admin", label: "Administrateur", aide: "Tout, y compris les paramètres du poste" },
+  { value: "neutre", label: "Neutre (en mission)", aide: "Aucun droit, n'apparaît plus dans les listes d'imputation ; historique conservé" },
 ];
 
 function ChronoRoleSelect({
@@ -93,6 +97,8 @@ function DepartmentCheckboxes({
 export function AdminsView({ currentUserId }: { currentUserId: number }) {
   const [admins, setAdmins] = useState<Admin[] | null>(null);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [inviteDepartments, setInviteDepartments] = useState<Department[]>(["protocole"]);
   const [inviteChronoRole, setInviteChronoRole] = useState<ChronoRole | null>(null);
   const [inviteChronoFonction, setInviteChronoFonction] = useState("");
@@ -106,6 +112,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
   const [editDepartments, setEditDepartments] = useState<Department[]>([]);
   const [editChronoRole, setEditChronoRole] = useState<ChronoRole | null>(null);
   const [editChronoFonction, setEditChronoFonction] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [savingDepartments, setSavingDepartments] = useState(false);
 
   async function loadAdmins() {
@@ -132,6 +140,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
+          name,
+          phone,
           departments: inviteDepartments,
           chronoRole: inviteChronoRole,
           chronoFonction: inviteChronoFonction,
@@ -148,6 +158,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         setManualLink(data.setPasswordUrl);
       }
       setEmail("");
+      setName("");
+      setPhone("");
       setInviteDepartments(["protocole"]);
       setInviteChronoRole(null);
       setInviteChronoFonction("");
@@ -188,6 +200,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
     setEditDepartments(admin.departments);
     setEditChronoRole(admin.chronoRole);
     setEditChronoFonction(admin.chronoFonction ?? "");
+    setEditName(admin.name ?? "");
+    setEditPhone(admin.phone ?? "");
     setError(null);
   }
 
@@ -199,6 +213,8 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: editName,
+          phone: editPhone,
           departments: editDepartments,
           chronoRole: editChronoRole,
           chronoFonction: editChronoFonction,
@@ -227,11 +243,25 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         <form onSubmit={handleInvite} className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nom complet"
+              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
+            />
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nouvel.admin@ambaci.at"
               required
+              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
+            />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Téléphone (WhatsApp)"
               className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
             />
             <button
@@ -294,9 +324,11 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-medium text-sm">
-                  {admin.email}
+                  {admin.name || admin.email}
                   {admin.id === currentUserId && <span className="text-neutral-400 font-normal"> (vous)</span>}
                 </p>
+                {admin.name && <p className="text-xs text-neutral-500">{admin.email}</p>}
+                {admin.phone && <p className="text-xs text-neutral-500">{admin.phone}</p>}
                 <p className="text-xs text-neutral-500">
                   2FA {admin.totp_enabled ? "activée" : "désactivée"} · depuis{" "}
                   {new Date(admin.created_at).toLocaleDateString("fr-FR")}
@@ -327,6 +359,20 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
 
             {editingId === admin.id ? (
               <div className="flex flex-wrap items-center gap-3">
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nom complet"
+                  className="rounded-lg border border-neutral-300 px-2.5 py-1.5 text-sm"
+                />
+                <input
+                  type="tel"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="Téléphone (WhatsApp)"
+                  className="rounded-lg border border-neutral-300 px-2.5 py-1.5 text-sm"
+                />
                 <DepartmentCheckboxes selected={editDepartments} onChange={setEditDepartments} />
                 {editDepartments.includes("chrono") && (
                   <ChronoRoleSelect

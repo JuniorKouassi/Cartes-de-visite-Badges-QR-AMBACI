@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as {
-    email?: string; departments?: string[]; chronoRole?: string; chronoFonction?: string;
+    email?: string; name?: string; phone?: string; departments?: string[]; chronoRole?: string; chronoFonction?: string;
   } | null;
   const email = body?.email?.trim().toLowerCase();
   if (!email || !EMAIL_RE.test(email)) {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   // nobody, including the inviting admin, ever knows or chooses it.
   const placeholder = crypto.randomUUID() + crypto.randomUUID();
   const passwordHash = await hashPassword(placeholder);
-  const newAdmin = await createAdminUser(env.DB, email, passwordHash);
+  const newAdmin = await createAdminUser(env.DB, email, passwordHash, body?.name, body?.phone);
   await setChronoGrant(env.DB, newAdmin.id, chronoRole, body?.chronoFonction?.trim() || null);
   await setAdminDepartments(env.DB, newAdmin.id, departments);
 

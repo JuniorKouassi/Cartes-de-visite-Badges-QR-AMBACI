@@ -63,7 +63,8 @@ export default async function ChronoPage() {
 
   const jeton = await creerJetonChrono(secret, {
     email: user.email,
-    nom: user.email.split("@")[0],
+    nom: user.name || user.email.split("@")[0],
+    telephone: user.phone || null,
     role: grant.role,
     fonction: grant.fonction,
   });

@@ -1,6 +1,8 @@
 export interface AdminUser {
   id: number;
   email: string;
+  name: string | null;
+  phone: string | null;
   password_hash: string;
   totp_secret: string | null;
   totp_enabled: number;
@@ -29,6 +31,8 @@ export async function getAdminUserById(db: D1Database, id: number): Promise<Admi
 export interface AdminUserSummary {
   id: number;
   email: string;
+  name: string | null;
+  phone: string | null;
   totp_enabled: number;
   created_at: string;
   departments: Department[];
@@ -36,7 +40,7 @@ export interface AdminUserSummary {
 
 export async function listAdminUsers(db: D1Database): Promise<AdminUserSummary[]> {
   const [{ results: admins }, { results: grants }] = await Promise.all([
-    db.prepare("SELECT id, email, totp_enabled, created_at FROM admin_users ORDER BY email").all<
+    db.prepare("SELECT id, email, name, phone, totp_enabled, created_at FROM admin_users ORDER BY email").all<
       Omit<AdminUserSummary, "departments">
     >(),
     db.prepare("SELECT admin_id, department FROM admin_departments").all<{ admin_id: number; department: Department }>(),
@@ -87,15 +91,35 @@ export async function deleteAdminUser(db: D1Database, id: number): Promise<void>
   await db.prepare("DELETE FROM admin_users WHERE id = ?").bind(id).run();
 }
 
-export async function createAdminUser(db: D1Database, email: string, passwordHash: string): Promise<AdminUser> {
+export async function createAdminUser(
+  db: D1Database,
+  email: string,
+  passwordHash: string,
+  name?: string | null,
+  phone?: string | null
+): Promise<AdminUser> {
   const result = await db
     .prepare(
-      `INSERT INTO admin_users (email, password_hash, updated_at) VALUES (?, ?, datetime('now')) RETURNING *`
+      `INSERT INTO admin_users (email, name, phone, password_hash, updated_at) VALUES (?, ?, ?, ?, datetime('now')) RETURNING *`
     )
-    .bind(email.trim().toLowerCase(), passwordHash)
+    .bind(email.trim().toLowerCase(), name?.trim() || null, phone?.trim() || null, passwordHash)
     .first<AdminUser>();
   if (!result) throw new Error("Échec de la création de l'administrateur");
   return result;
+}
+
+export async function setAdminName(db: D1Database, id: number, name: string | null): Promise<void> {
+  await db
+    .prepare("UPDATE admin_users SET name = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(name?.trim() || null, id)
+    .run();
+}
+
+export async function setAdminPhone(db: D1Database, id: number, phone: string | null): Promise<void> {
+  await db
+    .prepare("UPDATE admin_users SET phone = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(phone?.trim() || null, id)
+    .run();
 }
 
 export async function updateAdminPassword(db: D1Database, id: number, passwordHash: string): Promise<void> {
@@ -133,14 +157,18 @@ export async function disableAdminTotp(db: D1Database, id: number): Promise<void
  * y fait. Les deux sont indépendants : un conseiller et le chef de mission
  * voient tous deux la tuile Chrono, mais l'un signe et l'autre non.
  */
-export const CHRONO_ROLES = ["chef", "secretariat", "conseiller", "admin"] as const;
+export const CHRONO_ROLES = ["chef", "secretariat", "conseiller", "rpa", "payeur", "saf", "admin", "neutre"] as const;
 export type ChronoRole = (typeof CHRONO_ROLES)[number];
 
 export const CHRONO_ROLE_LABELS: Record<ChronoRole, string> = {
   chef: "Chef de mission",
   secretariat: "Secrétariat",
   conseiller: "Conseiller",
+  rpa: "RPA",
+  payeur: "Payeur",
+  saf: "SAF",
   admin: "Administrateur",
+  neutre: "Neutre (en mission)",
 };
 
 export function isChronoRole(value: string): value is ChronoRole {

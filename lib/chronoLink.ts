@@ -18,6 +18,7 @@ export const CHRONO_SSO_TTL_SECONDS = 60; // le jeton ne sert qu'au saut, une mi
 export type ChronoHandoff = {
   email: string;
   nom: string;
+  telephone: string | null;
   role: ChronoRole;
   fonction: string | null;
 };

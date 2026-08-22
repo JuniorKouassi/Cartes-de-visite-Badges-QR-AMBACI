@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getCurrentAdminUser } from "@/lib/authSession";
 import { countAdminUsers, deleteAdminUser, getAdminUserById, isChronoRole, isDepartment,
-         setAdminDepartments, setChronoGrant } from "@/lib/adminUsers";
+         setAdminDepartments, setAdminName, setAdminPhone, setChronoGrant } from "@/lib/adminUsers";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentAdminUser();
@@ -20,7 +20,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const body = (await request.json().catch(() => null)) as {
-    departments?: string[]; chronoRole?: string; chronoFonction?: string;
+    name?: string; phone?: string; departments?: string[]; chronoRole?: string; chronoFonction?: string;
   } | null;
   const departments = (body?.departments ?? []).filter(isDepartment);
   if (departments.length === 0) {
@@ -32,6 +32,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Choisissez un rôle Chrono" }, { status: 400 });
   }
 
+  if (body && "name" in body) await setAdminName(env.DB, targetId, body.name ?? null);
+  if (body && "phone" in body) await setAdminPhone(env.DB, targetId, body.phone ?? null);
   await setAdminDepartments(env.DB, targetId, departments);
   // Retirer l'habilitation retire le rôle : on ne laisse pas traîner un droit
   // de signature sur un compte qui n'a plus accès au service.
