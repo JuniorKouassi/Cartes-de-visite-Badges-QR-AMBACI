@@ -241,13 +241,13 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
         </p>
 
         <form onSubmit={handleInvite} className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nom complet"
-              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
+              className="w-full min-w-0 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
             />
             <input
               type="email"
@@ -255,15 +255,17 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nouvel.admin@ambaci.at"
               required
-              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
+              className="w-full min-w-0 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
             />
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Téléphone (WhatsApp)"
-              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
+              className="w-full min-w-0 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ci-green"
             />
+          </div>
+          <div className="flex justify-end">
             <button
               type="submit"
               disabled={
@@ -271,7 +273,7 @@ export function AdminsView({ currentUserId }: { currentUserId: number }) {
                 inviteDepartments.length === 0 ||
                 (inviteDepartments.includes("chrono") && !inviteChronoRole)
               }
-              className="rounded-full bg-ci-green px-5 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60 shrink-0"
+              className="w-full sm:w-auto rounded-full bg-ci-green px-5 py-2.5 text-white font-medium shadow hover:bg-ci-green-dark transition-colors disabled:opacity-60"
             >
               {inviting ? "Envoi…" : "Inviter"}
             </button>
