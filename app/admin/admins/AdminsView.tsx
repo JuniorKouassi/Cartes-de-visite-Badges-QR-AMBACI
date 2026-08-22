@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Department = "protocole" | "consulaire" | "paierie" | "chrono";
-type ChronoRole = "chef" | "secretariat" | "conseiller" | "rpa" | "payeur" | "saf" | "admin" | "neutre";
+type ChronoRole = "chef" | "secretariat" | "conseiller" | "rpa" | "payeur" | "saf" | "ministre_conseiller" | "admin" | "neutre";
 type Admin = {
   id: number; email: string; name: string | null; phone: string | null; totp_enabled: number; created_at: string;
   departments: Department[]; chronoRole: ChronoRole | null; chronoFonction: string | null;
@@ -24,6 +24,7 @@ const CHRONO_ROLE_OPTIONS: { value: ChronoRole; label: string; aide: string }[] 
   { value: "rpa", label: "RPA", aide: "Mêmes droits que Conseiller" },
   { value: "payeur", label: "Payeur", aide: "Mêmes droits que Conseiller" },
   { value: "saf", label: "SAF", aide: "Mêmes droits que Conseiller" },
+  { value: "ministre_conseiller", label: "Ministre conseiller", aide: "Mêmes droits que Conseiller" },
   { value: "admin", label: "Administrateur", aide: "Tout, y compris les paramètres du poste" },
   { value: "neutre", label: "Neutre (en mission)", aide: "Aucun droit, n'apparaît plus dans les listes d'imputation ; historique conservé" },
 ];

@@ -157,7 +157,7 @@ export async function disableAdminTotp(db: D1Database, id: number): Promise<void
  * y fait. Les deux sont indépendants : un conseiller et le chef de mission
  * voient tous deux la tuile Chrono, mais l'un signe et l'autre non.
  */
-export const CHRONO_ROLES = ["chef", "secretariat", "conseiller", "rpa", "payeur", "saf", "admin", "neutre"] as const;
+export const CHRONO_ROLES = ["chef", "secretariat", "conseiller", "rpa", "payeur", "saf", "ministre_conseiller", "admin", "neutre"] as const;
 export type ChronoRole = (typeof CHRONO_ROLES)[number];
 
 export const CHRONO_ROLE_LABELS: Record<ChronoRole, string> = {
@@ -167,6 +167,7 @@ export const CHRONO_ROLE_LABELS: Record<ChronoRole, string> = {
   rpa: "RPA",
   payeur: "Payeur",
   saf: "SAF",
+  ministre_conseiller: "Ministre conseiller",
   admin: "Administrateur",
   neutre: "Neutre (en mission)",
 };
